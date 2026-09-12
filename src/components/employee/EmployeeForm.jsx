@@ -13,6 +13,13 @@ export default function EmployeeForm({
   errors = {},
   onChange,
   idPrefix = "emp",
+  // Admin-workspace accounts (SUPER_ADMIN / ADMIN) have no store assignment;
+  // the employment block is hidden for them. The backend keeps its own guard.
+  adminDomain = false,
+  // Create always stores ACTIVE — the status dropdown is a dead field there.
+  hideStatus = false,
+  // Email is the login identifier; PATCH cannot change it.
+  emailLocked = false,
 }) {
   const sections = useMemo(
     () => sectionsForDepartment(values.department),
@@ -44,11 +51,19 @@ export default function EmployeeForm({
           className={employeeInputClass(Boolean(errors.lastName))}
         />
       </EmployeeField>
-      <EmployeeField label="Email" required error={errors.email} id={`${idPrefix}-email`}>
+      <EmployeeField
+        label="Email"
+        required={!emailLocked}
+        error={errors.email}
+        id={`${idPrefix}-email`}
+        hint={emailLocked ? "Email is the sign-in identifier and cannot be changed here." : ""}
+      >
         <input
           id={`${idPrefix}-email`}
           type="email"
           value={values.email}
+          readOnly={emailLocked}
+          disabled={emailLocked}
           onChange={(event) => field("email", event.target.value)}
           className={employeeInputClass(Boolean(errors.email))}
         />
@@ -61,6 +76,8 @@ export default function EmployeeForm({
           className={employeeInputClass(Boolean(errors.phone))}
         />
       </EmployeeField>
+      {adminDomain ? null : (
+      <>
       <EmployeeField label="Role" required error={errors.role} id={`${idPrefix}-role`}>
         <select
           id={`${idPrefix}-role`}
@@ -91,7 +108,7 @@ export default function EmployeeForm({
           ))}
         </select>
       </EmployeeField>
-      <EmployeeField label="Section" id={`${idPrefix}-section`}>
+      <EmployeeField label="Section" id={`${idPrefix}-section`} hint="Not saved on the account yet.">
         <select
           id={`${idPrefix}-section`}
           value={values.section}
@@ -106,7 +123,7 @@ export default function EmployeeForm({
           ))}
         </select>
       </EmployeeField>
-      <EmployeeField label="Store / location" required error={errors.store} id={`${idPrefix}-store`}>
+      <EmployeeField label="Store / location" error={errors.store} id={`${idPrefix}-store`} hint="Not saved on the account yet.">
         <select
           id={`${idPrefix}-store`}
           value={values.store}
@@ -121,7 +138,7 @@ export default function EmployeeForm({
           ))}
         </select>
       </EmployeeField>
-      <EmployeeField label="Joining date" required error={errors.joiningDate} id={`${idPrefix}-join`}>
+      <EmployeeField label="Joining date" error={errors.joiningDate} id={`${idPrefix}-join`} hint="Not saved on the account yet.">
         <input
           id={`${idPrefix}-join`}
           type="date"
@@ -130,6 +147,9 @@ export default function EmployeeForm({
           className={employeeInputClass(Boolean(errors.joiningDate))}
         />
       </EmployeeField>
+      </>
+      )}
+      {hideStatus ? null : (
       <EmployeeField label="Status" id={`${idPrefix}-status`}>
         <select
           id={`${idPrefix}-status`}
@@ -144,6 +164,7 @@ export default function EmployeeForm({
           ))}
         </select>
       </EmployeeField>
+      )}
     </div>
   );
 }
@@ -158,5 +179,5 @@ export const emptyEmployeeDraft = () => ({
   section: "",
   store: "",
   joiningDate: "",
-  status: "PENDING",
+  status: "ACTIVE",
 });

@@ -27,18 +27,17 @@ import {
 } from "react";
 import { canAccessPath, hasPermission as permit } from "../services/employees/authorization";
 import {
-  apiSignInEmployee,
+  apiSignInStaff,
   apiChangePasswordEmployee,
   apiSignOutEmployee,
   apiRestoreEmployeeSession,
+  apiUpdateOwnStaffProfile,
 } from "../services/api/authApi";
 import { writeStorage } from "../utils/shopping";
 import { clearTokens, getAccessToken } from "../services/api/apiClient";
-import {
-  checkIn as punchIn,
-  checkOut as punchOut,
-  getTodayAttendance,
-} from "../services/workforce/attendanceService";
+import { getTodayAttendance } from "../services/workforce/attendanceService";
+import { apiPunchIn as punchIn, apiPunchOut as punchOut } from "../services/workforce/workforceApi";
+import { hydrateAttendance } from "../services/workforce/workforceSync";
 
 const EmployeeAuthContext = createContext(null);
 
@@ -119,14 +118,24 @@ export function EmployeeAuthProvider({ children }) {
 
   const signIn = useCallback(async ({ employeeId, password }) => {
     setIsLoading(true);
-    const result = await apiSignInEmployee({ employeeId, password });
+    // Canonical unified flow (/auth/staff/sign-in): the backend resolves the
+    // account level from the credential; employee-domain levels establish the
+    // employee session. Admin-workspace credentials are refused here with
+    // guidance — the portals share ONE login page but keep isolated sessions.
+    const result = await apiSignInStaff({ identifier: employeeId, password });
     setIsLoading(false);
 
     if (!result.ok) return result;
+    if (result.workspace !== "employee") {
+      clearTokens("admin");
+      return {
+        ok: false,
+        error: "This credential belongs to an Admin workspace account. Continue from the unified sign-in page.",
+      };
+    }
 
-    // apiSignInEmployee already persisted the JWT under the employee-scoped
-    // keys (apiClient derives the scope from the request path), so customer
-    // and admin sessions are never clobbered.
+    // apiSignInStaff already persisted the JWT under the employee-scoped
+    // keys, so customer and admin sessions are never clobbered.
     setSession({ employee: result.employee, isAuthenticated: true });
     return result;
   }, []);
@@ -140,25 +149,91 @@ export function EmployeeAuthProvider({ children }) {
   }, []);
 
   // ── Change Password ──────────────────────────────────────────────────────
-
+  // After a successful password change the backend revokes ALL refresh
+  // sessions and blacklists the current access token (see
+  // AuthService.change_password). For the initial forced-password flow the
+  // employee must remain authenticated: we re-establish the session with
+  // the new credential before returning, so navigation to /employee loads
+  // the profile/permissions with a valid token and never renders blank.
   const changePassword = useCallback(async ({ currentPassword, newPassword, confirmPassword }) => {
     if (!employee) return { ok: false, error: "You need to sign in first." };
     setIsLoading(true);
     const result = await apiChangePasswordEmployee({ currentPassword, newPassword, confirmPassword });
-    setIsLoading(false);
-    if (!result.ok) return result;
+    if (!result.ok) {
+      setIsLoading(false);
+      return result;
+    }
 
-    // Clear force_password_change flag on the local snapshot
+    // For voluntary changes the old token is blacklisted; for the initial
+    // forced-password flow the backend keeps it valid so navigation can
+    // complete before re-auth finishes (see AuthService.change_password
+    // was_forced branch). Either way we obtain a fresh employee-scoped
+    // session with the new password — same unified endpoint the login page
+    // uses, so account_level / workspace / permissions are canonically
+    // resolved. This keeps the flow inside the existing auth architecture
+    // without inventing a new token-refresh contract.
+    const identifier = (
+      employee.email ||
+      employee.phone ||
+      employee.employeeId ||
+      employee.employeeCode ||
+      employee.employee_code ||
+      ""
+    ).trim();
+    if (identifier && newPassword) {
+      try {
+        const reauth = await apiSignInStaff({ identifier, password: newPassword });
+        if (reauth.ok && reauth.workspace === "employee" && reauth.employee) {
+          // apiSignInStaff already persisted the new tokens under the
+          // employee scope; refresh the canonical profile (permissions,
+          // accountLevel) from the backend.
+          const restored = await apiRestoreEmployeeSession();
+          if (restored.ok) {
+            setSession({ employee: restored.employee, isAuthenticated: true });
+          } else {
+            setSession({ employee: reauth.employee, isAuthenticated: true });
+          }
+          setIsLoading(false);
+          return { ok: true, employee: restored.ok ? restored.employee : reauth.employee };
+        }
+      } catch {
+        // fall through to local flag clear — the caller will still navigate
+        // but a subsequent 401 will correctly route to /login rather than
+        // rendering a blank page.
+      }
+    }
+
+    // Fallback when identifier is missing or re-auth is unavailable: at
+    // minimum clear the forced flag locally so the route guard does not
+    // loop back to /employee/change-password.
+    const fallbackEmployee = employee
+      ? { ...employee, mustChangePassword: false }
+      : null;
     setSession((prev) => ({
       ...prev,
-      employee: prev.employee
-        ? { ...prev.employee, mustChangePassword: false }
-        : null,
+      employee: fallbackEmployee,
     }));
-    return { ok: true };
+    setIsLoading(false);
+    return { ok: true, employee: fallbackEmployee };
   }, [employee]);
 
   // ── Refresh local session (re-read from storage) ─────────────────────────
+
+  const updateOwnProfile = useCallback(
+    async (patch) => {
+      if (!employee) return { ok: false, error: "You need to sign in first." };
+      const result = await apiUpdateOwnStaffProfile(patch, "employee");
+      if (!result.ok) {
+        return {
+          ...result,
+          errors: result.details ? { phone: result.error } : { form: result.error },
+        };
+      }
+      setSession({ employee: result.employee, isAuthenticated: true });
+      return { ok: true, employee: result.employee };
+    },
+    [employee]
+  );
 
   const refreshSession = useCallback(async () => {
     if (!hasStoredEmployeeToken()) {
@@ -187,7 +262,7 @@ export function EmployeeAuthProvider({ children }) {
     [employee]
   );
 
-  // ── Attendance (still local until Phase J) ────────────────────────────────
+  // ── Attendance — server-authoritative (mirror re-read after each punch) ──
 
   const getAttendance = useCallback(() => {
     if (!employee) return null;
@@ -196,14 +271,18 @@ export function EmployeeAuthProvider({ children }) {
     return { ...record, checkedInAt: record.checkIn, checkedOutAt: record.checkOut };
   }, [employee]);
 
-  const checkIn = useCallback(() => {
+  const checkIn = useCallback(async () => {
     if (!employee) return { ok: false };
-    return punchIn({ employeeId: employee.employeeId ?? employee.id, actor: employee });
+    const result = await punchIn();
+    if (result.ok) await hydrateAttendance({ employeeCode: employee.employeeId ?? employee.id });
+    return result;
   }, [employee]);
 
-  const checkOut = useCallback(() => {
+  const checkOut = useCallback(async () => {
     if (!employee) return { ok: false };
-    return punchOut({ employeeId: employee.employeeId ?? employee.id, actor: employee });
+    const result = await punchOut();
+    if (result.ok) await hydrateAttendance({ employeeCode: employee.employeeId ?? employee.id });
+    return result;
   }, [employee]);
 
   // ── Context value ─────────────────────────────────────────────────────────
@@ -217,6 +296,7 @@ export function EmployeeAuthProvider({ children }) {
     signOut,
     changePassword,
     refreshSession,
+    updateOwnProfile,
     hasPermission,
     canAccess,
     getAttendance,
@@ -224,7 +304,7 @@ export function EmployeeAuthProvider({ children }) {
     checkOut,
   }), [
     employee, isAuthenticated, isLoading,
-    signIn, signOut, changePassword, refreshSession,
+    signIn, signOut, changePassword, refreshSession, updateOwnProfile,
     hasPermission, canAccess, getAttendance, checkIn, checkOut,
   ]);
 
@@ -246,6 +326,7 @@ const inertEmployeeAuth = {
   signOut:        async () => {},
   changePassword: async () => ({ ok: false, error: "" }),
   refreshSession: () => ({ employee: null, isAuthenticated: false }),
+  updateOwnProfile: async () => ({ ok: false, error: "" }),
   hasPermission:  () => false,
   canAccess:      () => false,
   getAttendance:  () => null,

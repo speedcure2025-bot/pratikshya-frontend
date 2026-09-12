@@ -121,6 +121,41 @@ export async function apiAnalyticsOrders() {
   } catch (err) { return handleError(err); }
 }
 
+/**
+ * GET /admin/dashboard/summary — ONE consolidated dashboard read.
+ *
+ * The analytics module also exposes the same payload at
+ * GET /analytics/admin/dashboard/summary. The Admin portal uses the
+ * /admin path (the contract the dashboard was built against).
+ *
+ * Replaces the dashboard's previous fan-out (overview + employees + sales +
+ * top-products + orders-status + orders + inventory-summary = 7+ requests,
+ * with the employee list fetched twice per load). Every figure is a bounded
+ * backend aggregate in a single response.
+ */
+export async function apiAdminDashboardSummary({ days = 7, recentLimit = 5 } = {}) {
+  const qs = new URLSearchParams({
+    days: String(days),
+    recent_limit: String(recentLimit),
+  });
+  try {
+    const data = await apiClient.get(`/admin/dashboard/summary?${qs}`, { scope: "admin" });
+    return { ok: true, ...data };
+  } catch (primaryErr) {
+    const primary = handleError(primaryErr);
+    // The handler was originally mounted only under /analytics. If this
+    // process has not picked up the /admin alias yet, use that payload
+    // rather than failing the whole dashboard.
+    if (primary.status !== 404) return primary;
+    try {
+      const data = await apiClient.get(`/analytics/admin/dashboard/summary?${qs}`, { scope: "admin" });
+      return { ok: true, ...data };
+    } catch (err) {
+      return handleError(err);
+    }
+  }
+}
+
 export async function apiAnalyticsInventorySummary() {
   try {
     const data = await apiClient.get("/analytics/inventory-summary", { scope: "admin" });

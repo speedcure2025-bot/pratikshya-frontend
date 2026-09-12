@@ -5,7 +5,7 @@
  * a typed URL or a forged call still has to pass here.
  */
 
-import { EMPLOYEE_STATUS, canEmployeeLogin } from "../../config/employeeStatus";
+import { canEmployeeLogin, isAccessBlocked } from "../../config/employeeStatus";
 import { PERMISSIONS } from "../../config/employeePermissions";
 import { hasPermission } from "../employees/authorization";
 
@@ -93,10 +93,7 @@ export const canManagePerformance = (actor) => canUsePermission(actor, PERMISSIO
 
 export const isEmployeeInactiveForOps = (employee) => {
   if (!employee) return true;
-  return (
-    employee.status === EMPLOYEE_STATUS.SUSPENDED ||
-    employee.status === EMPLOYEE_STATUS.INACTIVE
-  );
+  return isAccessBlocked(employee.status);
 };
 
 export default {

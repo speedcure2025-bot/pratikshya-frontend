@@ -11,8 +11,12 @@ import { getStatusLabel } from "../config/employeeStatus";
 export const employeeFullName = (employee) => {
   if (!employee) return "Team member";
   const name = [employee.firstName, employee.lastName].filter(Boolean).join(" ").trim();
-  return name || "Team member";
+  return name || String(employee.name || employee.fullName || "").trim() || "Team member";
 };
+
+/** Directory/detail URL key: PF staff code, else the users.id fallback. */
+export const staffHrefId = (person) =>
+  String(person?.employeeId || person?.id || "").trim();
 
 export const employeeInitials = (employee) => {
   const first = employee?.firstName?.[0] ?? "";

@@ -5,14 +5,27 @@ import AdminPage from "../../../components/admin/AdminPage";
 import AdminPanel from "../../../components/admin/AdminPanel";
 import DataTable from "../../../components/employee/DataTable";
 import EmployeeField, { employeeInputClass } from "../../../components/employee/EmployeeField";
-import StatusBadge from "../../../components/employee/StatusBadge";
 import { AtelierButton } from "../../../design-system";
 import { useEmployeeManagement } from "../../../context/EmployeeManagementContext";
-import { ROLE_OPTIONS, getRoleLabel } from "../../../config/employeeRoles";
-import { DEPARTMENT_OPTIONS, getDepartmentLabel } from "../../../config/employeeDepartments";
-import { STATUS_OPTIONS, EMPLOYEE_STATUS, canEmployeeLogin } from "../../../config/employeeStatus";
+import { useEmployeesBase } from "./employeesBase";
+import { ROLE_OPTIONS, getRoleLabel, isKnownRole } from "../../../config/employeeRoles";
+import {
+  ACCOUNT_LEVELS,
+  ACCOUNT_LEVEL_META,
+  CAPABILITY_GROUPS,
+  workspaceForLevel,
+} from "../../../config/rbacModel";
+import { DEPARTMENT_OPTIONS, DEPARTMENT_DEFINITIONS } from "../../../config/employeeDepartments";
+import {
+  STATUS_FILTER_OPTIONS,
+  EMPLOYEE_STATUS,
+  canEmployeeLogin,
+  isAccessBlocked,
+  getEmployeeStatus,
+} from "../../../config/employeeStatus";
 import { getPermissionLabel } from "../../../config/employeePermissions";
-import { employeeFullName, formatEmployeeDateTime } from "../../../utils/employee";
+import { employeeFullName, formatEmployeeDateTime, staffHrefId } from "../../../utils/employee";
+import { cn } from "../../../utils/cn";
 
 const Metric = ({ icon: Icon, label, value, detail }) => (
   <div className="border border-mist/80 bg-surface/40 px-5 py-4">
@@ -29,23 +42,110 @@ const Metric = ({ icon: Icon, label, value, detail }) => (
   </div>
 );
 
-const accessIsBlocked = (person) =>
-  [EMPLOYEE_STATUS.INACTIVE, EMPLOYEE_STATUS.SUSPENDED].includes(person.status);
+const CAPABILITY_LABELS = Object.fromEntries(
+  CAPABILITY_GROUPS.flatMap((group) =>
+    group.actions.map((action) => [action.code, `${group.label} · ${action.label}`])
+  )
+);
+
+const STATUS_MEANING = {
+  [EMPLOYEE_STATUS.ACTIVE]: "Can sign in",
+  [EMPLOYEE_STATUS.PENDING]: "Awaiting first sign-in",
+  [EMPLOYEE_STATUS.ON_LEAVE]: "Away · can still sign in",
+  [EMPLOYEE_STATUS.SUSPENDED]: "Sign-in blocked",
+  [EMPLOYEE_STATUS.INACTIVE]: "Access disabled",
+};
+
+const STATUS_TONE = {
+  ink: "bg-ink text-ivory",
+  accent: "border border-accent/25 bg-accent/10 text-accent",
+  quiet: "border border-mist bg-surface text-cocoa",
+  danger: "border border-accent/25 bg-accent/10 text-accent",
+  muted: "border border-mist bg-canvas-deep text-graphite",
+};
+
+const directoryRole = (person) => {
+  const levelMeta = ACCOUNT_LEVEL_META[person.accountLevel];
+  const roleId = isKnownRole(person.businessRole) ? person.businessRole : person.role;
+  if (isKnownRole(roleId)) {
+    const primary = getRoleLabel(roleId);
+    return { primary, detail: levelMeta && levelMeta.label !== primary ? levelMeta.label : null };
+  }
+  if (levelMeta?.workspace === "admin") {
+    return { primary: levelMeta.label, detail: "Admin Portal" };
+  }
+  return { primary: "No store role assigned", detail: levelMeta?.label ?? null };
+};
+
+const directoryDepartment = (person) => {
+  if (workspaceForLevel(person.accountLevel) === "admin") return "Administration";
+  return DEPARTMENT_DEFINITIONS[person.department]?.label ?? "Not assigned";
+};
+
+const permissionLabel = (key) => {
+  if (key === "*") return "Full system access";
+  if (CAPABILITY_LABELS[key]) return CAPABILITY_LABELS[key];
+  const label = getPermissionLabel(key);
+  return label === "Restricted action" ? null : label;
+};
 
 const permissionSummary = (person) => {
   const permissions = Array.isArray(person.permissions) ? person.permissions : [];
-  if (!permissions.length) return "No operational permissions";
-  const labels = permissions.slice(0, 2).map(getPermissionLabel);
-  const remaining = permissions.length - labels.length;
-  return `${labels.join(", ")}${remaining > 0 ? ` +${remaining}` : ""}`;
+  if (person.accountLevel === ACCOUNT_LEVELS.SUPER_ADMIN || permissions.includes("*")) {
+    return "Full system access";
+  }
+  if (!permissions.length) {
+    return workspaceForLevel(person.accountLevel) === "admin"
+      ? "No capabilities assigned"
+      : "No operational permissions";
+  }
+  const labels = [...new Set(permissions.map(permissionLabel).filter(Boolean))];
+  if (!labels.length) {
+    return `${permissions.length} ${permissions.length === 1 ? "capability" : "capabilities"} assigned`;
+  }
+  const shown = labels.slice(0, 2);
+  const remaining = labels.length - shown.length;
+  return `${shown.join(", ")}${remaining > 0 ? ` +${remaining}` : ""}`;
 };
 
-export default function AdminEmployees() {
+const DirectoryStatus = ({ status }) => {
+  const definition = getEmployeeStatus(status);
+  return (
+    <div>
+      <span
+        className={cn(
+          "inline-flex items-center px-2 py-0.5 font-ui text-xs",
+          STATUS_TONE[definition.tone] ?? STATUS_TONE.quiet
+        )}
+      >
+        {definition.label}
+      </span>
+      <p className="mt-1 font-ui text-[11px] text-taupe">
+        {STATUS_MEANING[definition.id] ?? (definition.canLogin ? "Can sign in" : "Cannot sign in")}
+      </p>
+    </div>
+  );
+};
+
+const DirectoryRole = ({ person }) => {
+  const { primary, detail } = directoryRole(person);
+  return (
+    <div>
+      <p>{primary}</p>
+      {detail ? <p className="mt-1 font-ui text-[11px] text-taupe">{detail}</p> : null}
+    </div>
+  );
+};
+
+export default function AdminEmployees({ basePath } = {}) {
+  const base = useEmployeesBase(basePath);
   const {
     employees,
     getEmployees,
     activateEmployee,
     deactivateEmployee,
+    suspendEmployee,
+    canManageEmployees,
   } = useEmployeeManagement();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("");
@@ -68,20 +168,24 @@ export default function AdminEmployees() {
     [getEmployees, query, role, department, status]
   );
 
-  const changeAccess = async (person) => {
+  const changeAccess = async (person, action) => {
     if (busyId) return;
-    const activating = accessIsBlocked(person);
-    setBusyId(person.employeeId);
+    const recordId = staffHrefId(person);
+    setBusyId(recordId);
     setNotice(null);
-    const result = activating
-      ? await activateEmployee(person.employeeId)
-      : await deactivateEmployee(person.employeeId);
+    const result =
+      action === "activate"
+        ? await activateEmployee(recordId)
+        : action === "suspend"
+          ? await suspendEmployee(recordId)
+          : await deactivateEmployee(recordId);
     setBusyId(null);
+    const label = action === "activate" ? "active" : action === "suspend" ? "suspended" : "inactive";
     setNotice(
       result.ok
         ? {
             ok: true,
-            text: `${employeeFullName(person)} is now ${activating ? "active" : "inactive"}.`,
+            text: `${employeeFullName(person)} is now ${label}.`,
           }
         : { ok: false, text: result.message || "The account status could not be changed." }
     );
@@ -93,9 +197,11 @@ export default function AdminEmployees() {
       title={<>Employee <span className="italic text-accent">accounts.</span></>}
       description="Create and administer employee access. Attendance, performance and day-to-day operations remain in the Employee Portal."
       actions={
-        <AtelierButton as={Link} to="/admin/employees/new" size="chip">
-          Add employee
-        </AtelierButton>
+        canManageEmployees ? (
+          <AtelierButton as={Link} to={`${base}/new`} size="chip">
+            Add employee
+          </AtelierButton>
+        ) : null
       }
     >
       {notice ? (
@@ -139,7 +245,7 @@ export default function AdminEmployees() {
           <EmployeeField label="Status">
             <select value={status} onChange={(event) => setStatus(event.target.value)} className={employeeInputClass()}>
               <option value="">All statuses</option>
-              {STATUS_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+              {STATUS_FILTER_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
             </select>
           </EmployeeField>
         </div>
@@ -154,39 +260,65 @@ export default function AdminEmployees() {
               label: "Employee",
               render: (row) => (
                 <div>
-                  <Link to={`/admin/employees/${row.employeeId}`} className="font-medium text-ink hover:text-accent">
+                  <Link to={`${base}/${staffHrefId(row)}`} className="font-medium text-ink hover:text-accent">
                     {employeeFullName(row)}
                   </Link>
-                  <p className="mt-1 text-[11px] text-taupe">{row.employeeId} · {row.email}</p>
+                  <p className="mt-1 text-[11px] text-taupe">{row.employeeId || staffHrefId(row)} · {row.email}</p>
                 </div>
               ),
             },
-            { id: "role", label: "Role", render: (row) => getRoleLabel(row.role) },
-            { id: "department", label: "Department", render: (row) => getDepartmentLabel(row.department) },
-            { id: "status", label: "Status", render: (row) => <StatusBadge status={row.status} /> },
+            {
+              id: "role",
+              label: "Role",
+              render: (row) => <DirectoryRole person={row} />,
+            },
+            { id: "department", label: "Department", render: (row) => directoryDepartment(row) },
+            { id: "status", label: "Status", render: (row) => <DirectoryStatus status={row.status} /> },
             { id: "permissions", label: "Permissions", render: permissionSummary },
             {
               id: "lastLogin",
               label: "Last activity",
-              render: (row) => row.lastLogin ? formatEmployeeDateTime(row.lastLogin) : "Never signed in",
+              render: (row) => row.lastLogin ? formatEmployeeDateTime(row.lastLogin) : "Not recorded",
             },
             {
               id: "actions",
               label: "Actions",
               render: (row) => (
                 <div className="flex flex-wrap gap-x-3 gap-y-2 text-[12px]">
-                  <Link to={`/admin/employees/${row.employeeId}`} className="text-brass hover:text-accent">View</Link>
-                  <Link to={`/admin/employees/${row.employeeId}/edit`} className="text-brass hover:text-accent">Edit</Link>
-                  <button
-                    type="button"
-                    disabled={Boolean(busyId)}
-                    onClick={() => changeAccess(row)}
-                    className="text-brass hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {busyId === row.employeeId
-                      ? accessIsBlocked(row) ? "Activating…" : "Deactivating…"
-                      : accessIsBlocked(row) ? "Activate" : "Deactivate"}
-                  </button>
+                  <Link to={`${base}/${staffHrefId(row)}`} className="text-brass hover:text-accent">View</Link>
+                  {canManageEmployees ? (
+                  <Link to={`${base}/${staffHrefId(row)}/edit`} className="text-brass hover:text-accent">Edit</Link>
+                  ) : null}
+                  {canManageEmployees && isAccessBlocked(row.status) ? (
+                    <button
+                      type="button"
+                      disabled={Boolean(busyId)}
+                      onClick={() => changeAccess(row, "activate")}
+                      className="text-brass hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {busyId === staffHrefId(row) ? "Activating…" : "Activate"}
+                    </button>
+                  ) : null}
+                  {canManageEmployees && !isAccessBlocked(row.status) ? (
+                    <>
+                      <button
+                        type="button"
+                        disabled={Boolean(busyId)}
+                        onClick={() => changeAccess(row, "suspend")}
+                        className="text-brass hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {busyId === staffHrefId(row) ? "Updating…" : "Suspend"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={Boolean(busyId)}
+                        onClick={() => changeAccess(row, "deactivate")}
+                        className="text-brass hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {busyId === staffHrefId(row) ? "Updating…" : "Deactivate"}
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               ),
             },

@@ -2,12 +2,26 @@
  * PRATIKSHYA FASHON — Admin Portal navigation.
  *
  * One catalogue of business modules grouped the way the house is run. All
- * modules listed here are implemented and routed (see App.jsx). The single
- * Admin role (SUPER_ADMIN) may access every module, so the sidebar does not
- * filter by permission — authorization is enforced by AdminProtectedRoute.
+ * modules listed here are implemented and routed (see App.jsx). The tree is
+ * CAPABILITY-AWARE since the 2026-09 auth consolidation: SUPER_ADMIN receives
+ * the complete navigation; every other Admin carries the same tree filtered
+ * by their assigned capabilities (filterAdminNav below). Backend
+ * authorization remains the security authority — this filtering is UX.
  *
  * This is the ONE centralized Admin navigation definition used by the
  * sidebar; there is no second Admin nav elsewhere.
+ *
+ * CONSOLIDATION (2026-09): simulated / non-durable Admin surfaces were
+ * removed from the visible production navigation and their routes now
+ * redirect safely (see App.jsx):
+ *   • Inventory suite (localStorage simulation — backend ledger is an empty
+ *     stub, blocker B-01)        → deferred, employee portal keeps its routes
+ *   • Media Review Queue (session-mirror only, no durable backend workflow)
+ *   • Media Product Mapping desk (overlaps the canonical Product Media Manager)
+ *   • Standalone Media detail page (session mirror; library stays canonical)
+ *   • Activity log (no backend audit writers exist yet — blocker B-09)
+ * The source files are retained as clearly-deferred code; nothing was
+ * deleted, so these surfaces can return behind real backends.
  */
 
 export const ADMIN_BRAND = {
@@ -15,13 +29,18 @@ export const ADMIN_BRAND = {
   portal: "Admin Portal",
   subtitle: "Business Management & Operations",
   home: "/admin",
-  login: "/admin/login",
+  login: "/login", // unified staff sign-in (all four account levels)
 };
 
 /**
  * Grouped Admin navigation. Operational sub-routes are kept as `children`
  * inside their parent section so the sidebar stays clean while every
  * existing destination remains reachable.
+ *
+ * CAPABILITY-AWARE (2026-09): every item carries the canonical capability it
+ * requires (see `config/rbacModel.js`). SUPER_ADMIN sees the complete tree;
+ * ADMIN sees exactly the modules their assigned capabilities cover — one
+ * navigation configuration for both, no duplicated role-specific trees.
  */
 export const ADMIN_NAV_GROUPS = [
   {
@@ -30,8 +49,8 @@ export const ADMIN_NAV_GROUPS = [
     icon: "layout",
     items: [
       { id: "dashboard", label: "Dashboard", to: "/admin", icon: "layout", exact: true },
-      { id: "analytics", label: "Analytics", to: "/admin/analytics", icon: "chartNoAxes" },
-      { id: "ai-assistant", label: "AI Assistant", to: "/admin/ai-assistant", icon: "sparkles" },
+      { id: "analytics", label: "Analytics", to: "/admin/analytics", icon: "chartNoAxes", permission: "analytics.view" },
+      { id: "ai-assistant", label: "AI Assistant", to: "/admin/ai-assistant", icon: "sparkles", permission: "ai.view" },
     ],
   },
   {
@@ -44,22 +63,22 @@ export const ADMIN_NAV_GROUPS = [
         label: "Products",
         to: "/admin/products",
         icon: "package",
+        permission: "catalogue.view",
         children: [
-          { id: "product-review", label: "Product Review", to: "/admin/products/review", icon: "check" },
+          { id: "product-review", label: "Product Review", to: "/admin/products/review", icon: "check", permission: "product_workflow.review" },
         ],
       },
-      { id: "categories", label: "Categories", to: "/admin/categories", icon: "tags" },
-      { id: "collections", label: "Collections", to: "/admin/collections", icon: "layers" },
-      { id: "offers", label: "Offers", to: "/admin/offers", icon: "tag" },
+      { id: "categories", label: "Categories", to: "/admin/categories", icon: "tags", permission: "catalogue.view" },
+      { id: "collections", label: "Collections", to: "/admin/collections", icon: "layers", permission: "catalogue.view" },
+      { id: "offers", label: "Offers", to: "/admin/offers", icon: "tag", permission: "offers.view" },
       {
         id: "media",
-        label: "Media Management",
+        label: "Media",
         to: "/admin/media",
         icon: "image",
+        permission: "media.view",
         children: [
-          { id: "media-review", label: "Review Queue", to: "/admin/media/review", icon: "check" },
-          { id: "marketing-media", label: "Marketing Media", to: "/admin/media/marketing", icon: "imagePlay" },
-          { id: "media-product-mapping", label: "Product Mapping", to: "/admin/media/product-mapping", icon: "layers" },
+          { id: "marketing-media", label: "Marketing / HOME_HERO", to: "/admin/media/marketing", icon: "imagePlay", permission: "media.view" },
         ],
       },
     ],
@@ -69,7 +88,7 @@ export const ADMIN_NAV_GROUPS = [
     label: "People / Organization",
     icon: "usersRound",
     items: [
-      { id: "employees", label: "Employees", to: "/admin/employees", icon: "badge" },
+      { id: "employees", label: "Employees", to: "/admin/employees", icon: "badge", permission: "people.view" },
     ],
   },
   {
@@ -77,29 +96,9 @@ export const ADMIN_NAV_GROUPS = [
     label: "Orders & Customers",
     icon: "bag",
     items: [
-      { id: "orders", label: "Orders", to: "/admin/orders", icon: "bag" },
-      { id: "customers", label: "Customers", to: "/admin/customers", icon: "users" },
-      { id: "returns", label: "Returns", to: "/admin/returns", icon: "undo" },
-    ],
-  },
-  {
-    id: "inventory",
-    label: "Inventory & Operations",
-    icon: "boxes",
-    items: [
-      {
-        id: "inventory",
-        label: "Inventory",
-        to: "/admin/inventory",
-        icon: "boxes",
-        children: [
-          { id: "receive", label: "Receive", to: "/admin/inventory/receive", icon: "inbox" },
-          { id: "adjust", label: "Adjust", to: "/admin/inventory/adjust", icon: "sliders" },
-          { id: "transfers", label: "Transfers", to: "/admin/inventory/transfers", icon: "swap" },
-          { id: "movements", label: "Movements", to: "/admin/inventory/movements", icon: "list" },
-          { id: "low-stock", label: "Low Stock", to: "/admin/inventory/low-stock", icon: "alert" },
-        ],
-      },
+      { id: "orders", label: "Orders", to: "/admin/orders", icon: "bag", permission: "orders.view" },
+      { id: "customers", label: "Customers", to: "/admin/customers", icon: "users", permission: "customers.view" },
+      { id: "returns", label: "Returns", to: "/admin/returns", icon: "undo", permission: "returns.view" },
     ],
   },
   {
@@ -107,11 +106,30 @@ export const ADMIN_NAV_GROUPS = [
     label: "System",
     icon: "sliders",
     items: [
-      { id: "activity", label: "Activity", to: "/admin/activity", icon: "list" },
-      { id: "settings", label: "Settings", to: "/admin/settings", icon: "sliders" },
+      { id: "settings", label: "Settings", to: "/admin/settings", icon: "sliders", permission: "settings.view" },
     ],
   },
 ];
+
+/**
+ * Capability filter for the Admin navigation. SUPER_ADMIN (top-level
+ * override) and items without a declared `permission` (e.g. the dashboard)
+ * always pass; everything else requires the item capability. Items and whole
+ * groups are OMITTED — never rendered and then hidden.
+ */
+export const filterAdminNav = (groups, can) => {
+  const allowed = (item) => !item.permission || can?.(item.permission);
+  const out = [];
+  for (const group of groups) {
+    const items = group.items
+      .filter(allowed)
+      .map((item) => (item.children
+        ? { ...item, children: item.children.filter(allowed) }
+        : item));
+    if (items.length) out.push({ ...group, items });
+  }
+  return out;
+};
 
 /** Every Admin link (parents + children) for active-route resolution. */
 export const flattenAdminNavLinks = (groups = ADMIN_NAV_GROUPS) => {

@@ -4,7 +4,7 @@ import { Bell, LogOut, Menu, Store, User, X } from "lucide-react";
 import { ADMIN_BRAND } from "../../config/adminNavigation";
 import { getAdminRoleLabel } from "../../config/adminAccess";
 import { useAdminAuth } from "../../context/AdminAuthContext";
-import { adminInitials } from "../../utils/admin";
+import { adminDisplayName, adminInitials } from "../../utils/admin";
 import { cn } from "../../utils/cn";
 import { Brand, transition } from "../../design-system";
 
@@ -19,6 +19,7 @@ import { Brand, transition } from "../../design-system";
 export default function AdminHeader({ navOpen, onToggleNav, menuButtonRef }) {
   const { admin, signOut } = useAdminAuth();
   const navigate = useNavigate();
+  const displayName = adminDisplayName(admin);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -41,7 +42,7 @@ export default function AdminHeader({ navOpen, onToggleNav, menuButtonRef }) {
   const handleSignOut = () => {
     setMenuOpen(false);
     signOut();
-    navigate("/admin/login", { replace: true });
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -112,7 +113,7 @@ export default function AdminHeader({ navOpen, onToggleNav, menuButtonRef }) {
                 </span>
               )}
               <span className="hidden text-left sm:block">
-                <span className="block font-ui text-xs text-ivory">{admin?.name}</span>
+                <span className="block font-ui text-xs text-ivory">{displayName}</span>
                 <span className="block font-ui text-[10px] uppercase tracking-[.14em] text-ash">
                   {getAdminRoleLabel(admin?.role)}
                 </span>
@@ -126,7 +127,7 @@ export default function AdminHeader({ navOpen, onToggleNav, menuButtonRef }) {
                 className="absolute right-0 top-[calc(100%+8px)] z-50 w-60 border border-mist bg-canvas p-1 text-ink shadow-xl"
               >
                 <div className="border-b border-mist/70 px-4 py-3">
-                  <p className="font-display text-lg font-light">{admin?.name}</p>
+                  <p className="font-display text-lg font-light">{displayName}</p>
                   <p className="font-ui text-[10px] uppercase tracking-[.16em] text-taupe">
                     {admin?.adminId}
                   </p>

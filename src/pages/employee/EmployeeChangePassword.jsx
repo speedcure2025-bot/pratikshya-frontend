@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AlertCircle, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AtelierButton, Brand, Rule } from "../../design-system";
 import { EMPLOYEE_BRAND } from "../../config/employeeNavigation";
+import { homeForAccountLevel } from "../../config/rbacModel";
 import { useEmployeeAuth } from "../../context/EmployeeAuthContext";
 import { validateEmployeePasswordChange } from "../../services/employees/employeePassword";
 
@@ -39,7 +40,11 @@ export default function EmployeeChangePassword() {
     setIsSubmitting(true);
     const result = await changePassword({ currentPassword, newPassword, confirmPassword });
     if (result.ok) {
-      navigate("/employee", { replace: true });
+      // Prefer the re-hydrated session (accountLevel + permissions) over the
+      // pre-change snapshot so SUPER_EMPLOYEE/EMPLOYEE both land on a real
+      // /employee shell instead of a chrome-less redirect.
+      const home = homeForAccountLevel(result.employee?.accountLevel || employee?.accountLevel) || "/employee";
+      navigate(home, { replace: true });
     } else {
       setError(result.error || "The password could not be updated.");
       setIsSubmitting(false);
@@ -146,7 +151,7 @@ export default function EmployeeChangePassword() {
             type="button"
             onClick={() => {
               signOut();
-              navigate("/employee/login", { replace: true });
+              navigate("/login", { replace: true });
             }}
             className="mt-6 font-ui text-xs text-taupe hover:text-accent"
           >

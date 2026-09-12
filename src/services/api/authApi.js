@@ -31,11 +31,20 @@ import { apiClient, ApiError, clearTokens, handleError, setTokens } from "./apiC
  * Split naively on the first space — handles "Asha Patel" → {firstName:"Asha", lastName:"Patel"}
  */
 function splitName(fullName = "") {
-  const parts = (fullName ?? "").trim().split(/\s+/);
+  const parts = (fullName ?? "").trim().split(/\s+/).filter(Boolean);
   return {
     firstName: parts[0] ?? "",
     lastName:  parts.slice(1).join(" "),
   };
+}
+
+/** Backend stores `full_name`; older payloads may already be split. */
+function resolveFullName(dto = {}) {
+  const fromParts = [dto.firstName ?? dto.first_name, dto.lastName ?? dto.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  return String(dto.full_name ?? dto.fullName ?? dto.name ?? fromParts ?? "").trim();
 }
 
 function toCustomerProfile(dto) {
@@ -57,23 +66,44 @@ function toCustomerProfile(dto) {
   };
 }
 
+function pickBusinessRole(dto) {
+  // Account levels must never be treated as a floor role — that is what
+  // sent SUPER_EMPLOYEE sessions to the Sales dashboard.
+  const levels = new Set(["SUPER_ADMIN", "ADMIN", "SUPER_EMPLOYEE", "EMPLOYEE"]);
+  const explicit = dto.businessRole ?? dto.business_role;
+  if (explicit && !levels.has(String(explicit).toUpperCase())) return explicit;
+  const fromRoles = (dto.roles ?? []).find((name) => name && !levels.has(String(name).toUpperCase()));
+  if (fromRoles) return fromRoles;
+  const fallback = dto.role;
+  if (fallback && !levels.has(String(fallback).toUpperCase())) return fallback;
+  return null;
+}
+
 function toEmployeeProfile(dto) {
   const profile = dto.profile ?? {};
+  const fullName = resolveFullName({ ...dto, ...profile });
+  const names = splitName(fullName);
   return {
     id:                 dto.id,
-    ...splitName(dto.full_name ?? dto.fullName),
+    ...names,
+    name:               fullName,
     email:              dto.email ?? "",
     phone:              dto.phone ?? "",
     // The UI/backend workflow contract expects the employee code here, not a user UUID.
     employeeId:         dto.employee_code ?? dto.employeeCode ?? profile.employee_code ?? profile.employeeCode ?? "",
-    role:               dto.roles?.[0] ?? dto.role ?? "EMPLOYEE",
+    role:               pickBusinessRole(dto),
     roles:              dto.roles ?? [],
+    // Backend-resolved: legacy granular codes ∪ canonical capability codes.
     permissions:        dto.permissions ?? [],
+    accountLevel:       dto.accountLevel ?? dto.account_level ?? "EMPLOYEE",
+    businessRole:       dto.businessRole ?? dto.business_role ?? pickBusinessRole(dto),
+    workspace:          dto.workspace ?? "employee",
     status:             dto.status ?? "ACTIVE",
     mustChangePassword: Boolean(dto.force_password_change ?? dto.mustChangePassword),
     // employee_profile extras if present
     department:         dto.department ?? profile.department ?? "",
     designation:        dto.designation ?? profile.designation ?? "",
+    createdAt:          dto.created_at ?? dto.createdAt ?? null,
   };
 }
 
@@ -81,20 +111,31 @@ function toAdminProfile(dto) {
   // Prefer a human-readable admin code if the backend provides one;
   // fall back to the UUID so the workflow principal resolver can match
   // against whichever identifier is stored in the admin register.
-  const adminId = dto.admin_code ?? dto.adminId ?? dto.id;
+  const adminId = dto.admin_code ?? dto.adminId ?? dto.employee_code ?? dto.employeeCode ?? dto.id;
+  const accountLevel =
+    dto.accountLevel ?? dto.account_level ??
+    (dto.roles?.includes("SUPER_ADMIN") ? "SUPER_ADMIN" : "ADMIN");
+  const fullName = resolveFullName(dto);
   return {
     id:          dto.id,
-    ...splitName(dto.full_name),
+    ...splitName(fullName),
+    name:        fullName,
     email:       dto.email ?? "",
     phone:       dto.phone ?? "",
+    title:       dto.designation ?? dto.title ?? "",
     adminId:     adminId,
     // Expose the raw UUID separately so resolvePrincipal can match
     // JWT-authenticated sessions that don't have a legacy admin code.
     _uuid:       dto.id,
-    role:        dto.roles?.includes("SUPER_ADMIN") ? "SUPER_ADMIN" : (dto.roles?.[0] ?? "ADMIN"),
+    role:        accountLevel === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN",
     roles:       dto.roles ?? [],
+    // Backend-resolved: legacy granular codes ∪ canonical capability codes.
     permissions: dto.permissions ?? [],
+    accountLevel,
+    businessRole: dto.businessRole ?? dto.business_role ?? null,
+    workspace:    dto.workspace ?? "admin",
     status:      dto.status ?? "ACTIVE",
+    createdAt:    dto.createdAt ?? dto.created_at ?? null,
   };
 }
 
@@ -275,8 +316,97 @@ export async function apiSignOutAdmin() {
 }
 
 // ---------------------------------------------------------------------------
+// UNIFIED STAFF SIGN-IN — one login experience for all four account levels
+// (the /login page). The backend resolves the account level from the
+// credential; this layer only stores the token under the scope the account
+// level belongs to and hands the workspace decision to the caller.
+// ---------------------------------------------------------------------------
+
+/**
+ * POST /auth/staff/sign-in
+ * identifier may be an email, a phone or a PF employee code.
+ * Returns { ok, accountLevel, workspace, admin?, employee? }.
+ * Tokens are stored under the workspace's isolated scope so admin and
+ * employee sessions never clobber each other (or the customer session).
+ */
+export async function apiSignInStaff({ identifier, password }) {
+  try {
+    const data = await apiClient.post("/auth/staff/sign-in", {
+      identifier,
+      password,
+    }, { scope: "none" });
+
+    const dto = data.admin ?? data.employee ?? data.user ?? {};
+    const workspace = dto.workspace ?? (data.admin ? "admin" : "employee");
+    const accountLevel = dto.accountLevel ?? dto.account_level ?? null;
+    if (workspace === "admin" && dto.user_type && dto.user_type !== "admin") {
+      return { ok: false, error: "Admin authentication privileges required." };
+    }
+    if (workspace === "employee" && dto.user_type && dto.user_type !== "employee") {
+      return { ok: false, error: "Employee authentication required." };
+    }
+
+    const scope = workspace === "admin" ? "admin" : "employee";
+    storeTokensFromResponse(data, scope);
+
+    if (scope === "admin") {
+      return { ok: true, workspace, accountLevel, admin: toAdminProfile(dto) };
+    }
+    const employee = toEmployeeProfile(dto);
+    employee.mustChangePassword = Boolean(data.mustChangePassword ?? data.force_password_change ?? employee.mustChangePassword);
+    return { ok: true, workspace, accountLevel, employee };
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+/** Sign out every staff scope (used by the shared /auth/logout surface). */
+export async function apiSignOutStaff() {
+  try {
+    await apiClient.post("/auth/logout", {}, { scope: "admin" });
+  } catch { /* best-effort */ }
+  clearTokens("admin");
+  try {
+    await apiClient.post("/auth/logout", {}, { scope: "employee" });
+  } catch { /* best-effort */ }
+  clearTokens("employee");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // Shared — /auth/me (get current session profile)
 // ---------------------------------------------------------------------------
+
+/**
+ * PATCH the signed-in staff member's own contact identity.
+ * Admin workspace → PATCH /auth/me
+ * Employee workspace → PATCH /employee/me
+ */
+export async function apiUpdateOwnStaffProfile(patch, scope) {
+  const fullName = String(
+    patch.name
+    ?? patch.full_name
+    ?? [patch.firstName, patch.lastName].filter(Boolean).join(" ")
+  ).trim();
+  const body = {};
+  if (fullName) body.name = fullName;
+  if (patch.email !== undefined) body.email = patch.email;
+  if (patch.phone !== undefined) body.phone = patch.phone;
+  if (patch.title !== undefined) body.title = patch.title;
+  if (patch.designation !== undefined) body.designation = patch.designation;
+
+  try {
+    const path = scope === "employee" ? "/employee/me" : "/auth/me";
+    const data = await apiClient.patch(path, body, { scope });
+    const dto = data.data ?? data.admin ?? data.employee ?? data;
+    if (scope === "admin") {
+      return { ok: true, admin: toAdminProfile(dto) };
+    }
+    return { ok: true, employee: toEmployeeProfile(dto) };
+  } catch (err) {
+    return handleError(err);
+  }
+}
 
 export async function apiGetMe(scope) {
   try {
