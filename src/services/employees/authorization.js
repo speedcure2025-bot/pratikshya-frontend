@@ -40,6 +40,12 @@ export const hasPermission = (employee, permission) => {
     if (employee.accountLevel !== ACCOUNT_LEVELS.SUPER_EMPLOYEE) return false;
     if (holdsCapability(granted, permission)) return true;
     if (
+      holdsCapability(granted, "people.manage") &&
+      permission !== PERMISSIONS.EMPLOYEES_MANAGE_PERMISSIONS
+    ) {
+      return true;
+    }
+    if (
       permission === PERMISSIONS.EMPLOYEES_VIEW &&
       (holdsCapability(granted, "people.view") || holdsCapability(granted, "people.manage"))
     ) {

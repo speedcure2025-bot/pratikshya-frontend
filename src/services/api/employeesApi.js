@@ -15,7 +15,11 @@ import { apiClient, ApiError, getAccessToken, handleError } from "./apiClient";
  * their employee-scoped token — one API, one authorization matrix, enforced
  * server-side; the scope only selects which isolated token is attached.
  */
-export const resolveAccountScope = () => {
+export const resolveAccountScope = (overrideScope = null) => {
+  if (overrideScope) return overrideScope;
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/employee")) {
+    if (getAccessToken("employee")) return "employee";
+  }
   if (getAccessToken("admin")) return "admin";
   if (getAccessToken("employee")) return "employee";
   return "admin";
@@ -52,7 +56,7 @@ function normEmployee(u) {
 // ===========================================================================
 
 /** GET /admin/employees?page=&page_size=&search=&status=&department_id=&include_admins= */
-export async function apiAdminListEmployees({ page = 1, pageSize = 20, search, status, departmentId, includeAdmins = false } = {}) {
+export async function apiAdminListEmployees({ page = 1, pageSize = 20, search, status, departmentId, includeAdmins = false } = {}, scope = null) {
   try {
     const qs = new URLSearchParams({ page, page_size: Math.min(pageSize, 100) }); // backend caps at 100
     if (search)       qs.set("search", search);
@@ -62,16 +66,16 @@ export async function apiAdminListEmployees({ page = 1, pageSize = 20, search, s
     // omit this flag so the employee-side roster cannot enumerate admins;
     // the server also refuses the flag below ADMIN regardless.
     if (includeAdmins) qs.set("include_admins", "true");
-    const data = await apiClient.get(`/admin/employees?${qs}`, { scope: resolveAccountScope() });
+    const data = await apiClient.get(`/admin/employees?${qs}`, { scope: resolveAccountScope(scope) });
     const items = (data.items ?? data.data ?? data ?? []).map((e) => normEmployee(e.data ?? e));
     return { ok: true, items, total: data.total ?? items.length };
   } catch (err) { return handleError(err); }
 }
 
 /** GET /admin/employees/{id} */
-export async function apiAdminGetEmployee(id) {
+export async function apiAdminGetEmployee(id, scope = null) {
   try {
-    const data = await apiClient.get(`/admin/employees/${id}`, { scope: resolveAccountScope() });
+    const data = await apiClient.get(`/admin/employees/${id}`, { scope: resolveAccountScope(scope) });
     return { ok: true, employee: normEmployee(data.data ?? data) };
   } catch (err) { return handleError(err); }
 }
@@ -127,10 +131,10 @@ function sanitizeEmployeePayload(body, { isUpdate = false } = {}) {
 }
 
 /** POST /admin/employees */
-export async function apiAdminCreateEmployee(body) {
+export async function apiAdminCreateEmployee(body, scope = null) {
   try {
     const payload = sanitizeEmployeePayload(body);
-    const data = await apiClient.post("/admin/employees", payload, { scope: resolveAccountScope() });
+    const data = await apiClient.post("/admin/employees", payload, { scope: resolveAccountScope(scope) });
     const result = data.data ?? data;
     // The one-time temporary password surfaces here ONLY; it is never persisted client-side.
     return { ok: true, employee: normEmployee(result), temporaryPassword: result.temporaryPassword ?? null };
@@ -138,26 +142,26 @@ export async function apiAdminCreateEmployee(body) {
 }
 
 /** PATCH /admin/employees/{id} */
-export async function apiAdminUpdateEmployee(id, body) {
+export async function apiAdminUpdateEmployee(id, body, scope = null) {
   try {
     const payload = sanitizeEmployeePayload(body, { isUpdate: true });
-    const data = await apiClient.patch(`/admin/employees/${id}`, payload, { scope: resolveAccountScope() });
+    const data = await apiClient.patch(`/admin/employees/${id}`, payload, { scope: resolveAccountScope(scope) });
     return { ok: true, employee: normEmployee(data.data ?? data) };
   } catch (err) { return handleError(err); }
 }
 
 /** POST /admin/employees/{id}/status  body: { status } */
-export async function apiAdminUpdateEmployeeStatus(id, status) {
+export async function apiAdminUpdateEmployeeStatus(id, status, scope = null) {
   try {
-    const data = await apiClient.post(`/admin/employees/${id}/status`, { status }, { scope: resolveAccountScope() });
+    const data = await apiClient.post(`/admin/employees/${id}/status`, { status }, { scope: resolveAccountScope(scope) });
     return { ok: true, employee: normEmployee(data.data ?? data) };
   } catch (err) { return handleError(err); }
 }
 
 /** POST /admin/employees/{id}/reset-password */
-export async function apiAdminResetEmployeePassword(id, body = {}) {
+export async function apiAdminResetEmployeePassword(id, body = {}, scope = null) {
   try {
-    const data = await apiClient.post(`/admin/employees/${id}/reset-password`, body, { scope: resolveAccountScope() });
+    const data = await apiClient.post(`/admin/employees/${id}/reset-password`, body, { scope: resolveAccountScope(scope) });
     return {
       ok: true,
       message: data.message ?? "Password reset.",
@@ -168,17 +172,17 @@ export async function apiAdminResetEmployeePassword(id, body = {}) {
 }
 
 /** PUT /admin/employees/{id}/permissions  body: { permissionMode, permissions } */
-export async function apiAdminUpdateEmployeePermissions(id, { permissionMode, permissions }) {
+export async function apiAdminUpdateEmployeePermissions(id, { permissionMode, permissions }, scope = null) {
   try {
-    const data = await apiClient.put(`/admin/employees/${id}/permissions`, { permissionMode, permissions }, { scope: resolveAccountScope() });
+    const data = await apiClient.put(`/admin/employees/${id}/permissions`, { permissionMode, permissions }, { scope: resolveAccountScope(scope) });
     return { ok: true, employee: normEmployee(data.data ?? data) };
   } catch (err) { return handleError(err); }
 }
 
 /** DELETE /admin/employees/{id} */
-export async function apiAdminDeleteEmployee(id) {
+export async function apiAdminDeleteEmployee(id, scope = null) {
   try {
-    await apiClient.delete(`/admin/employees/${id}`, { scope: resolveAccountScope() });
+    await apiClient.delete(`/admin/employees/${id}`, { scope: resolveAccountScope(scope) });
     return { ok: true };
   } catch (err) { return handleError(err); }
 }

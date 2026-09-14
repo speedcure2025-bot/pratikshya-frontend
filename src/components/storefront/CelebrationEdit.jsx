@@ -28,7 +28,7 @@ const edits = [
     title: "Pieces created for moments you'll remember forever.",
     shortTitle: "The bridal edit",
     categoryId: "the-bride",
-    image: null,
+    image: "/images/products/bridal/the-bride/lehengas/PF-BR-LEH-0001/primary.avif",
   },
   {
     id: "groom",
@@ -37,7 +37,7 @@ const edits = [
     title: "Considered ceremonial dressing, tailored for the occasion.",
     shortTitle: "The ceremony edit",
     categoryId: "groom",
-    image: null,
+    image: "/images/products/men/groom/groom-collection/PF-M-GRM-GEN-0001/primary.avif",
   },
   {
     id: "festive",
@@ -46,7 +46,7 @@ const edits = [
     title: "Festive silhouettes with a contemporary soul.",
     shortTitle: "Made to celebrate",
     categoryId: "sarees",
-    image: null,
+    image: "/images/collections/editorial/festive-edit/PF-COL-FES-0001/primary.avif",
   },
   {
     id: "heritage",
@@ -55,7 +55,7 @@ const edits = [
     title: "Craft, colour and stories woven into every piece.",
     shortTitle: "Woven for generations",
     categoryId: "sarees",
-    image: null,
+    image: "/images/collections/editorial/heritage-weaves/PF-COL-HER-0001/primary.avif",
   },
 ];
 
