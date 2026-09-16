@@ -96,11 +96,12 @@ export default function Checkout() {
     if (valid) checkout.nextStep();
   };
 
+  const isCod = checkout.paymentMethod === "cod";
   const primaryLabels = [
     "Continue to Delivery",
     "Continue to Review",
     "Continue to Payment",
-    `Pay ${formatINR(checkout.totals.total)}`,
+    isCod ? "Place Order" : `Pay ${formatINR(checkout.totals.total)}`,
   ];
 
   const stepPanels = [

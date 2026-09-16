@@ -17,6 +17,7 @@ import {
   validatePasswordMatch,
 } from "../../utils/validation";
 import { cn } from "../../utils/cn";
+import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 
 /**
  * Customer Sign Up — /signup
@@ -449,6 +450,30 @@ export default function SignUp() {
                     </>
                   )}
                 </AtelierButton>
+              </div>
+
+              {/* Social Login / Google SSO */}
+              <div className="relative my-6 text-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-mist/70" />
+                </div>
+                <div className="relative inline-block bg-surface/50 px-4 font-ui text-[10px] uppercase tracking-[.2em] text-taupe">
+                  Or continue with
+                </div>
+              </div>
+
+              <div>
+                <GoogleSignInButton
+                  label="Sign up with Google"
+                  onSuccess={(user) => {
+                    claimGuestOrders(user?.id);
+                    setSuccess(true);
+                    setTimeout(() => {
+                      navigate(returnTo, { replace: true });
+                    }, 500);
+                  }}
+                  onError={(err) => setGeneralError(err)}
+                />
               </div>
             </form>
 

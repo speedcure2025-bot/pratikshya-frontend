@@ -18,6 +18,8 @@ import {
   refreshCatalog,
 } from "./catalog/catalogStore";
 import {
+  apiListCategories,
+  apiListSubcategories,
   apiAdminGetCategory,
   apiAdminListCategories,
   apiAdminListSubcategories,
@@ -178,11 +180,16 @@ export const taxonomyRepository = {
    * ACTIVE-only; this is the editor-only, id-valued surface.
    */
   loadCategoryOptions: async () => {
-    const result = await apiAdminListCategories();
-    if (!result.ok) return result;
+    let result = await apiAdminListCategories();
+    if (!result.ok) {
+      result = await apiListCategories({ status: "ALL" });
+    }
+    const rawItems = (result.ok && Array.isArray(result.items) && result.items.length > 0)
+      ? result.items
+      : taxonomyRepository.categories();
     return {
       ok: true,
-      items: (result.items ?? [])
+      items: rawItems
         .map((entry) => asCategory(entry))
         .sort(byOrder)
         .map((entry) => ({ id: entry.id, label: entry.name, value: entry.id })),
@@ -197,11 +204,16 @@ export const taxonomyRepository = {
   },
   loadSubcategories: async (categoryId) => {
     if (!categoryId) return { ok: false, error: "No category id was provided.", status: 0, data: null };
-    const result = await apiAdminListSubcategories(categoryId);
-    if (!result.ok) return result;
+    let result = await apiAdminListSubcategories(categoryId);
+    if (!result.ok) {
+      result = await apiListSubcategories(categoryId, { status: "ALL" });
+    }
+    const rawItems = (result.ok && Array.isArray(result.items) && result.items.length > 0)
+      ? result.items
+      : taxonomyRepository.subcategories(categoryId);
     return {
       ok: true,
-      items: (result.items ?? [])
+      items: rawItems
         .map((entry) => asSubcategory({ ...entry, categoryId: entry.categoryId ?? categoryId }))
         .sort(byOrder),
     };

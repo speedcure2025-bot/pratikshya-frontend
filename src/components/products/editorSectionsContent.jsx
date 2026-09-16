@@ -7,7 +7,7 @@
  */
 
 import { Link } from "react-router-dom";
-import { Check, ExternalLink, Film, Image as ImageIcon, Star } from "lucide-react";
+import { Check, ExternalLink, Film, Image as ImageIcon, Star, Upload } from "lucide-react";
 import {
   PRODUCT_FLAG_OPTIONS,
   RETURN_ELIGIBILITY_OPTIONS,
@@ -239,6 +239,47 @@ export function SectionMedia({ draft, patch, portal }) {
               placeholder="saree-banarasi or https://images.pratikshya.com/..."
             />
           </Field>
+
+          <div className="mt-4">
+            <p className="mb-1.5 font-ui text-[10px] uppercase tracking-[.18em] text-ink font-medium">
+              Choose media from device
+            </p>
+            <div className="flex items-center gap-3">
+              <label
+                htmlFor="pf-device-media-upload"
+                className="inline-flex items-center gap-2 cursor-pointer border border-mist bg-canvas px-3.5 py-2 font-ui text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-surface"
+              >
+                <Upload size={14} className="text-taupe" aria-hidden="true" />
+                <span>Choose Media from Device</span>
+                <input
+                  id="pf-device-media-upload"
+                  type="file"
+                  accept="image/*,video/*"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) {
+                          patch({ image: evt.target.result });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+              {draft.image && draft.image.startsWith("data:") && (
+                <span className="font-ui text-[11px] text-accent font-medium">
+                  ✓ Loaded from device
+                </span>
+              )}
+            </div>
+            <p className="mt-1 font-ui text-[11px] text-taupe">
+              Select an image or video directly from your local computer or phone.
+            </p>
+          </div>
         </div>
 
         <div>

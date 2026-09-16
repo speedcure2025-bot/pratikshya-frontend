@@ -329,7 +329,9 @@ const PaymentStep = forwardRef(function PaymentStep(_props, ref) {
             size="lg"
             onClick={handlePay}
           >
-            Pay {formatINR(checkout.totals.total)}
+            {checkout.paymentMethod === "cod"
+              ? "Place Order"
+              : `Pay ${formatINR(checkout.totals.total)}`}
           </AtelierButton>
         </div>
         <p className="mt-4 flex items-center gap-2 font-ui text-[10px] text-taupe">

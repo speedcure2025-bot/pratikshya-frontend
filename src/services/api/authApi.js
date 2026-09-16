@@ -187,6 +187,20 @@ export async function apiSignInCustomer({ identifier, password }) {
   }
 }
 
+export async function apiSignInGoogleCustomer({ idToken }) {
+  try {
+    const data = await apiClient.post("/auth/oauth/google", {
+      id_token: idToken,
+    }, { scope: "none" });
+
+    storeTokensFromResponse(data, "customer");
+    const profile = toCustomerProfile(data.user ?? {});
+    return { ok: true, user: profile };
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
 export async function apiSignOutCustomer() {
   try {
     await apiClient.post("/auth/customer/sign-out", {}, { scope: "customer" });
