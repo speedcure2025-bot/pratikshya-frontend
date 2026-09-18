@@ -79,22 +79,26 @@ const buildSlides = (slides = [], heroMedia = null) => {
   }));
 
   return source.map((slide, index) => {
-    const registered = resolveHeroSlideImage(HOMEPAGE_HERO_THEMES[index], {
-      heroMedia,
-      usedIds,
-    });
+    const slideSrc = typeof slide.image === "string" ? slide.image : slide.image?.src || slide.image?.fallback;
+    const registered = (hasSlides && slideSrc)
+      ? null
+      : resolveHeroSlideImage(HOMEPAGE_HERO_THEMES[index], {
+          heroMedia,
+          usedIds,
+        });
     const registeredSrc =
       registered && (registered.src || registered.fallback);
-    // Priority: managed HOME_HERO media > backend-provided image > canonical hero object-store fallback
-    const image = registeredSrc
-      ? registered
-      : slide.image
-        ? {
+
+    // Priority: managed HOME_HERO media (backend GET /home slide) > resolver > fallback
+    const image = slideSrc
+      ? (typeof slide.image === "object" ? slide.image : {
             id: slide.id,
             src: slide.image,
-            alt: `${slide.title} — PRATIKSHYA FASHON`,
+            alt: `${slide.title || "Hero"} — PRATIKSHYA FASHON`,
             category: "hero",
-          }
+          })
+      : registeredSrc
+        ? registered
         : {
             id: slide.id || `hero-${index + 1}`,
             src: mediaObjectUrl(CANONICAL_HERO_KEYS[index % CANONICAL_HERO_KEYS.length]),
@@ -126,7 +130,11 @@ const resolveImageSrc = (image) => {
 };
 
 export default function HeroCarousel({ slides: slideData = [], heroMedia }) {
-  const slides = useMemo(() => buildSlides(slideData, heroMedia), [slideData, heroMedia]);
+  const slideItems = Array.from(slideData);
+  const slides = useMemo(
+    () => buildSlides(slideItems, heroMedia),
+    [slideItems.length, heroMedia, ...slideItems.map((s) => s.id || s.image)]
+  );
   const count = slides.length;
 
   /* ------------------------------------------------------------------ */
