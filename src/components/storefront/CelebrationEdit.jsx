@@ -66,15 +66,13 @@ export default function CelebrationEdit({ excludeIds = null }) {
      the live catalogue resolves it (PUBLISHED only), and that product's
      primary media stands. With no curated, published product it shows its
      legitimate empty state — never a static catalogue plate. */
-  const festiveEntries = usePlacementEntries(
-    MARKETING_PLACEMENTS.FESTIVE_SECTION,
-    getLiveStorefrontProducts()
-  );
-  /* The EDITORIAL placement owns the heritage storytelling plate — the one
-     frame without a frame-specific marketing seam. An ACTIVE record stands
-     in for the artwork exactly the way the festive record does; anything
-     else (no record, draft, archived, no usable file) leaves the house's
-     deterministic editorial frame where it is. */
+  const liveProducts = getLiveStorefrontProducts();
+  const bridalEntries = usePlacementEntries(MARKETING_PLACEMENTS.BRIDAL_SECTION, liveProducts);
+  const groomEntries = usePlacementEntries(MARKETING_PLACEMENTS.GROOM_SECTION, liveProducts);
+  const festiveEntries = usePlacementEntries(MARKETING_PLACEMENTS.FESTIVE_SECTION, liveProducts);
+  const lehengaEntries = usePlacementEntries(MARKETING_PLACEMENTS.LEHENGA_SECTION, liveProducts);
+  const sareeEntries = usePlacementEntries(MARKETING_PLACEMENTS.SAREE_SECTION, liveProducts);
+
   const editorialMedia = useActivePlacementMedia(MARKETING_PLACEMENTS.EDITORIAL);
   const activeEdit = edits.find((edit) => edit.id === activeId) ?? edits[0];
   const usedIds = new Set(excludeIds ?? []);
@@ -84,13 +82,23 @@ export default function CelebrationEdit({ excludeIds = null }) {
 
   const images = Object.fromEntries(
     edits.map((edit) => {
-      const resolved =
-        edit.id === "festive"
-          ? festiveEntries[0]?.image || imageRef(edit.image)
-          : edit.id === "heritage"
-            ? resolvePlacementImage(editorialMedia, resolveEditorialFrame("heritage", usedIds) || imageRef(edit.image))
-            : resolveEditorialFrame(themeFor(edit.id), usedIds) || imageRef(edit.image);
-      return [edit.id, resolved];
+      let resolved = null;
+      if (edit.id === "bridal") {
+        resolved = bridalEntries[0]?.image || lehengaEntries[0]?.image || sareeEntries[0]?.image;
+      } else if (edit.id === "groom") {
+        resolved = groomEntries[0]?.image;
+      } else if (edit.id === "festive") {
+        resolved = festiveEntries[0]?.image;
+      }
+
+      if (!resolved) {
+        resolved = edit.id === "heritage"
+          ? resolvePlacementImage(editorialMedia, resolveEditorialFrame("heritage", usedIds) || imageRef(edit.image))
+          : resolveEditorialFrame(themeFor(edit.id), usedIds) || imageRef(edit.image);
+      }
+
+      const imgObj = typeof resolved === "string" ? { src: resolved, alt: edit.label } : resolved;
+      return [edit.id, imgObj];
     })
   );
   const resolveImage = (edit) => images[edit.id] || imageRef(edit.image);

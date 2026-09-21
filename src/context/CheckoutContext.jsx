@@ -497,13 +497,14 @@ export function CheckoutProvider({ children }) {
     // ----------------------------------------------------------------
     if (current.paymentMethod === "cod") {
       paymentStartingRef.current = true;
+      setState((s) => ({ ...s, paymentStatus: PAYMENT_STATUS.PENDING, paymentMessage: "" }));
       const placed = await orderApi.placeOrder(payload);
       paymentStartingRef.current = false;
       if (!placed?.ok) {
         setState((s) => ({
           ...s,
           paymentStatus: PAYMENT_STATUS.FAILURE,
-          paymentMessage: placed?.error || "Your order could not be placed. Please try again.",
+          paymentMessage: placed?.message || placed?.error || "Your order could not be placed. Please try again.",
         }));
         return;
       }

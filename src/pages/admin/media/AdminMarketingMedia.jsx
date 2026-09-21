@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowDown, ArrowUp, Eye, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, Trash2, UploadCloud } from "lucide-react";
 import AdminPage from "../../../components/admin/AdminPage";
 import AdminPanel from "../../../components/admin/AdminPanel";
 import AdminMetricCard from "../../../components/admin/AdminMetricCard";
@@ -9,6 +9,8 @@ import MediaThumb from "../../../components/media/MediaThumb";
 import MediaUploadPanel from "../../../components/media/MediaUploadPanel";
 import ProductCatalogSelector from "../../../components/admin/ProductCatalogSelector";
 import BackendHomeHeroPanel from "../../../components/admin/BackendHomeHeroPanel";
+import { upsertServerProducts } from "../../../services/catalogRepository";
+import { addCustomProductToStore } from "../../../services/catalog/catalogStore";
 import { AtelierButton } from "../../../design-system";
 import {
   MARKETING_PLACEMENT_OPTIONS,
@@ -83,15 +85,56 @@ function ProductPlacementPanel({ placement, canCurate }) {
   const count = assigned.length;
   const toggleSelector = () => setSelectorOpen((open) => !open);
 
+  const handleDeviceFileUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageUrl = reader.result;
+      const stem = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim() || "Custom Product";
+      const name = stem.charAt(0).toUpperCase() + stem.slice(1);
+      const newProductId = `PF-CUST-${Date.now()}`;
+
+      const newProduct = {
+        id: newProductId,
+        name,
+        title: name,
+        department: placement?.recommendedDepartment || "Women",
+        category: placement?.recommendedCategory || "Sarees",
+        subcategory: placement?.recommendedSubcategory || null,
+        price: 1999,
+        originalPrice: 2499,
+        status: "PUBLISHED",
+        published: true,
+        image: imageUrl,
+        media: { primary: imageUrl },
+      };
+
+      upsertServerProducts([newProduct]);
+      addCustomProductToStore(newProduct);
+      marketingPlacementActions.add(placement.id, [newProductId]);
+    };
+    reader.readAsDataURL(file);
+    event.target.value = "";
+  };
+
   return (
     <AdminPanel
       eyebrow={placement.live ? "Live seam" : "Not yet wired"}
       title={placement.label}
       action={
         canCurate ? (
-          <AtelierButton size="chip" variant="outline" onClick={toggleSelector}>
-            {selectorOpen ? "Close" : "Add media"}
-          </AtelierButton>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 border border-ink/40 bg-surface px-2.5 py-1 font-ui text-[11px] uppercase tracking-[.14em] text-ink transition-colors hover:border-ink hover:bg-canvas">
+              <UploadCloud size={13} className="text-accent" />
+              Choose photo from device
+              <input type="file" accept="image/*" className="sr-only" onChange={handleDeviceFileUpload} />
+            </label>
+            <AtelierButton size="chip" variant="outline" onClick={toggleSelector}>
+              {selectorOpen ? "Close" : "Add media"}
+            </AtelierButton>
+          </div>
         ) : null
       }
     >
@@ -126,9 +169,16 @@ function ProductPlacementPanel({ placement, canCurate }) {
             {count} {count === 1 ? "product assigned" : "products assigned"}
           </p>
           {canCurate && !selectorOpen ? (
-            <AtelierButton size="chip" variant="outline" onClick={() => setSelectorOpen(true)}>
-              + Add products
-            </AtelierButton>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 border border-ink/40 bg-surface px-2.5 py-1 font-ui text-[11px] uppercase tracking-[.14em] text-ink transition-colors hover:border-ink hover:bg-canvas">
+                <UploadCloud size={13} className="text-accent" />
+                Choose photo from device
+                <input type="file" accept="image/*" className="sr-only" onChange={handleDeviceFileUpload} />
+              </label>
+              <AtelierButton size="chip" variant="outline" onClick={() => setSelectorOpen(true)}>
+                + Add products
+              </AtelierButton>
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -222,14 +272,20 @@ function ProductPlacementPanel({ placement, canCurate }) {
         <div className="border border-mist/80 bg-surface/30 px-5 py-10 text-center">
           <p className="font-ui text-sm text-taupe">No products assigned to this placement yet.</p>
           {canCurate ? (
-            <AtelierButton
-              size="chip"
-              variant="outline"
-              className="mt-4"
-              onClick={() => setSelectorOpen(true)}
-            >
-              Add from product catalog
-            </AtelierButton>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 border border-ink/40 bg-surface px-3 py-1.5 font-ui text-[11px] uppercase tracking-[.14em] text-ink transition-colors hover:border-ink hover:bg-canvas">
+                <UploadCloud size={13} className="text-accent" />
+                Choose photo from device
+                <input type="file" accept="image/*" className="sr-only" onChange={handleDeviceFileUpload} />
+              </label>
+              <AtelierButton
+                size="chip"
+                variant="outline"
+                onClick={() => setSelectorOpen(true)}
+              >
+                Add from product catalog
+              </AtelierButton>
+            </div>
           ) : null}
         </div>
       )}

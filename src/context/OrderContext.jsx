@@ -352,7 +352,7 @@ export function OrderProvider({ children }) {
       setCurrentOrderId(result.order.id);
       return { ok: true, order: result.order, message: "Order placed." };
     }
-    return { ok: false, order: null, message: result.error ?? "Order could not be placed." };
+    return { ok: false, order: null, error: result.error ?? "Order could not be placed.", message: result.error ?? "Order could not be placed." };
   }, []);
 
   const clearCurrentOrder = useCallback(() => setCurrentOrderId(null), []);

@@ -68,7 +68,19 @@ export const resolvePlacementEntries = (placementId, products = []) => {
   const entries = [];
   rows.forEach((product) => {
     const mediaSet = getProductMediaSet(product);
-    const image = mediaSet.primary;
+    let image = mediaSet?.primary;
+    if (!image || !image.src) {
+      const imgSrc = typeof product.image === "string"
+        ? product.image
+        : product.image?.src ?? (typeof product.media?.primary === "string" ? product.media.primary : product.media?.primary?.src);
+      if (imgSrc) {
+        image = {
+          id: `${product.id}-primary`,
+          src: imgSrc,
+          alt: product.name || "Product image",
+        };
+      }
+    }
     if (!image || !image.src) return;
     entries.push({
       product,
