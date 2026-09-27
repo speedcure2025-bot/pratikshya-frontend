@@ -453,7 +453,7 @@ export const buildOrderSnapshot = ({
    * Cash on delivery is not captured at checkout; every other demo method
    * settles at the moment of a successful mock payment.
    */
-  paymentStatus: paymentMethodId === "cod" ? "PENDING" : "PAID",
+  paymentStatus: paymentMethodId === "cod" ? "PENDING_PAYMENT" : "PAID",
 });
 
 /** Customer-facing label for a payment method id. */
