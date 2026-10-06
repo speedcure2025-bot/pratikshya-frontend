@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Archive, Pencil, RotateCcw } from "lucide-react";
+import { Archive, Pencil, Play, RotateCcw } from "lucide-react";
 import AdminPage from "../../../components/admin/AdminPage";
 import AdminPanel from "../../../components/admin/AdminPanel";
 import StatusBadge from "../../../components/employee/StatusBadge";
 import { AtelierButton } from "../../../design-system";
 import catalogRepository from "../../../services/catalogRepository";
-import taxonomyRepository, { TAXONOMY_STATUS } from "../../../services/taxonomyRepository";
+import taxonomyRepository from "../../../services/taxonomyRepository";
+import {
+  TAXONOMY_KIND,
+  runTaxonomyTransition,
+  taxonomyLifecycleActions,
+  taxonomyTransitionNotice,
+} from "../../../services/taxonomyLifecycle";
 import { useAdminAuth } from "../../../context/AdminAuthContext";
 import { formatAdminError } from "../../../services/admin/adminError";
 import { formatINR } from "../../../utils/shopping";
@@ -14,6 +20,8 @@ import { slugify } from "../../../services/catalogRepository";
 
 const inputClass = "w-full border border-mist bg-canvas px-3 py-2.5 font-ui text-sm text-ink outline-none focus:border-accent";
 const statusTone = { ACTIVE: "ink", DRAFT: "quiet", ARCHIVED: "muted" };
+const emptySubDraft = { name: "", slug: "", description: "", sortOrder: 100 };
+const lifecycleIcon = { activate: Play, archive: Archive, restore: RotateCcw };
 
 const Term = ({ label, value }) => (
   <div><dt className="font-ui text-[10px] uppercase tracking-[.16em] text-taupe">{label}</dt><dd className="mt-1 font-ui text-sm font-medium text-ink">{value || "—"}</dd></div>
@@ -25,7 +33,8 @@ export default function AdminCategoryDetail() {
   const actor = admin ? { adminId: admin.adminId, name: admin.name || "Administrator" } : null;
   const [version, setVersion] = useState(0);
   const [notice, setNotice] = useState("");
-  const [subDraft, setSubDraft] = useState({ name: "", slug: "", description: "", sortOrder: 100, status: TAXONOMY_STATUS.ACTIVE });
+  const [lifecycleBusy, setLifecycleBusy] = useState(false);
+  const [subDraft, setSubDraft] = useState(emptySubDraft);
 
   /*
    * The desk reads the ADMIN detail endpoint (GET /admin/categories/{id}),
@@ -82,23 +91,22 @@ export default function AdminCategoryDetail() {
     );
   }
 
-  const archiveOrRestore = async () => {
-    // Awaited server transition; failures keep the backend's own reason
-    // (e.g. the 409 refusal when a category still carries sub-records).
-    const wasArchived = category.status === TAXONOMY_STATUS.ARCHIVED;
-    const result = wasArchived
-      ? await taxonomyRepository.restoreCategory(category.id, actor)
-      : await taxonomyRepository.archiveCategory(category.id, actor);
+  const runLifecycle = async (kind, record, actionKey) => {
+    if (!record || lifecycleBusy) return;
+    setLifecycleBusy(true);
+    const result = await runTaxonomyTransition(kind, actionKey, record.id, actor);
+    setLifecycleBusy(false);
     if (result.ok) {
-      setNotice(
-        wasArchived
-          ? "Category restored on the server."
-          : products.length
-            ? "Category archived on the server. It contains products, and the taxonomy API exposes no permanent-delete route — products were left untouched."
-            : "Category archived on the server."
-      );
+      setNotice(taxonomyTransitionNotice(kind, actionKey, {
+        productCount: kind === TAXONOMY_KIND.CATEGORY ? products.length : 0,
+      }));
       setVersion((value) => value + 1);
-    } else setNotice(formatAdminError(result, { entity: `category ${category.name ?? category.id}`, action: wasArchived ? "restored" : "archived" }));
+      return;
+    }
+    setNotice(formatAdminError(result, {
+      entity: `${kind} ${record.name ?? record.id}`,
+      action: actionKey === "activate" ? "activated" : actionKey === "restore" ? "restored" : "archived",
+    }));
   };
 
   const createSubcategory = async (event) => {
@@ -106,26 +114,27 @@ export default function AdminCategoryDetail() {
     if (!subDraft.name.trim()) return setNotice("Subcategory name is required.");
     const result = await taxonomyRepository.createSubcategory(category.id, { ...subDraft, slug: slugify(subDraft.slug || subDraft.name), sortOrder: Number(subDraft.sortOrder) || 0 }, actor);
     if (result.ok) {
-      setSubDraft({ name: "", slug: "", description: "", sortOrder: 100, status: TAXONOMY_STATUS.ACTIVE });
-      setNotice("Subcategory created on the server.");
+      setSubDraft(emptySubDraft);
+      setNotice("Subcategory created as Draft. Activate it before assigning it to a product.");
       setVersion((value) => value + 1);
     } else setNotice(formatAdminError(result, { entity: "subcategory", action: "created" }));
   };
 
-  const toggleSubcategory = async (subcategory) => {
-    const wasArchived = subcategory.status === TAXONOMY_STATUS.ARCHIVED;
-    const result = wasArchived
-      ? await taxonomyRepository.restoreSubcategory(subcategory.id, actor)
-      : await taxonomyRepository.archiveSubcategory(subcategory.id, actor);
-    setNotice(
-      result.ok
-        ? wasArchived
-          ? "Subcategory restored on the server."
-          : "Subcategory archived on the server. Products remain intact — the backend keeps product references."
-        : formatAdminError(result, { entity: `subcategory ${subcategory.name ?? subcategory.id}`, action: wasArchived ? "restored" : "archived" })
-    );
-    setVersion((value) => value + 1);
-  };
+  const renderLifecycleButtons = (kind, record) =>
+    taxonomyLifecycleActions(record.status).map((action) => {
+      const Icon = lifecycleIcon[action.key];
+      return (
+        <AtelierButton
+          key={action.key}
+          size="chip"
+          variant="outline"
+          disabled={lifecycleBusy}
+          onClick={() => runLifecycle(kind, record, action.key)}
+        >
+          {Icon ? <Icon size={12} /> : null} {action.label}
+        </AtelierButton>
+      );
+    });
 
   return (
     <AdminPage
@@ -135,7 +144,7 @@ export default function AdminCategoryDetail() {
       actions={
         <>
           <AtelierButton as={Link} to={`/admin/categories/${category.id}/edit`} size="chip" variant="outline"><Pencil size={12} /> Edit</AtelierButton>
-          <AtelierButton onClick={archiveOrRestore} size="chip" variant="outline">{category.status === TAXONOMY_STATUS.ARCHIVED ? <RotateCcw size={12} /> : <Archive size={12} />} {category.status === TAXONOMY_STATUS.ARCHIVED ? "Restore" : "Archive"}</AtelierButton>
+          {renderLifecycleButtons(TAXONOMY_KIND.CATEGORY, category)}
         </>
       }
     >
@@ -164,9 +173,10 @@ export default function AdminCategoryDetail() {
               <input type="number" className={inputClass} value={subDraft.sortOrder} onChange={(event) => setSubDraft((current) => ({ ...current, sortOrder: event.target.value }))} aria-label="Sort order" />
               <AtelierButton type="submit" size="chip">Create</AtelierButton>
             </form>
+            <p className="mb-4 font-ui text-[11px] text-taupe">New subcategories start as Draft. Activate a row to make it assignable on product forms.</p>
             <div className="divide-y divide-mist/70 border border-mist/80 bg-canvas">
               {subcategories.map((subcategory) => {
-                const count = products.filter((product) => product.subcategory === subcategory.name).length;
+                const count = products.filter((product) => product.subcategory === subcategory.name || product.subcategory === subcategory.id || product.subcategory === subcategory.slug).length;
                 return (
                   <div key={subcategory.id} className="flex flex-col gap-3 p-3 font-ui text-sm sm:flex-row sm:items-center">
                     <div className="min-w-0 flex-1">
@@ -174,7 +184,7 @@ export default function AdminCategoryDetail() {
                       <p className="text-[11px] text-taupe">/{subcategory.slug} · {count} product{count === 1 ? "" : "s"}</p>
                     </div>
                     <StatusBadge label={subcategory.status} tone={statusTone[subcategory.status] || "quiet"} />
-                    <AtelierButton size="chip" variant="outline" onClick={() => toggleSubcategory(subcategory)}>{subcategory.status === TAXONOMY_STATUS.ARCHIVED ? "Restore" : "Archive"}</AtelierButton>
+                    <div className="flex flex-wrap gap-2">{renderLifecycleButtons(TAXONOMY_KIND.SUBCATEGORY, subcategory)}</div>
                   </div>
                 );
               })}

@@ -21,6 +21,7 @@ import AdminPage from "../../../components/admin/AdminPage";
 import AdminPanel from "../../../components/admin/AdminPanel";
 import { AtelierButton } from "../../../design-system";
 import taxonomyRepository, { TAXONOMY_STATUS } from "../../../services/taxonomyRepository";
+import { TAXONOMY_KIND, runTaxonomyTransition, taxonomyLifecycleActions } from "../../../services/taxonomyLifecycle";
 import { slugify } from "../../../services/catalogRepository";
 import { useAdminAuth } from "../../../context/AdminAuthContext";
 import { formatAdminError } from "../../../services/admin/adminError";
@@ -116,10 +117,10 @@ export default function AdminCategoryForm() {
    * supports (activate / archive / restore) are invoked explicitly.
    */
   const [lifecycleBusy, setLifecycleBusy] = useState(false);
-  const runTransition = async (transition, verb) => {
+  const runTransition = async (actionKey, verb) => {
     if (!existing || lifecycleBusy) return;
     setLifecycleBusy(true);
-    const result = await transition(existing.id, actor);
+    const result = await runTaxonomyTransition(TAXONOMY_KIND.CATEGORY, actionKey, existing.id, actor);
     setLifecycleBusy(false);
     if (!result.ok) {
       setError(formatAdminError(result, { entity: "category", action: verb }));
@@ -206,17 +207,18 @@ export default function AdminCategoryForm() {
           {existing ? (
             <div className="flex flex-wrap items-center gap-3">
               <span data-testid="category-status" className="border border-mist bg-canvas px-3 py-2.5 font-ui text-sm text-ink">{existing.status}</span>
-              {existing.status === TAXONOMY_STATUS.DRAFT ? (
-                <AtelierButton type="button" variant="outline" size="chip" disabled={lifecycleBusy}
-                  onClick={() => runTransition(taxonomyRepository.activateCategory, "activated")}>Activate</AtelierButton>
-              ) : null}
-              {existing.status === TAXONOMY_STATUS.ARCHIVED ? (
-                <AtelierButton type="button" variant="outline" size="chip" disabled={lifecycleBusy}
-                  onClick={() => runTransition(taxonomyRepository.restoreCategory, "restored")}>Restore</AtelierButton>
-              ) : (
-                <AtelierButton type="button" variant="outline" size="chip" disabled={lifecycleBusy}
-                  onClick={() => runTransition(taxonomyRepository.archiveCategory, "archived")}>Archive</AtelierButton>
-              )}
+              {taxonomyLifecycleActions(existing.status).map((action) => (
+                <AtelierButton
+                  key={action.key}
+                  type="button"
+                  variant="outline"
+                  size="chip"
+                  disabled={lifecycleBusy}
+                  onClick={() => runTransition(action.key, action.verb)}
+                >
+                  {action.label}
+                </AtelierButton>
+              ))}
             </div>
           ) : (
             <p className="border border-mist bg-canvas px-3 py-2.5 font-ui text-sm text-taupe">

@@ -143,8 +143,9 @@ export const buildUnifiedReviewRow = (product) => {
     sections,
     invalidSections: Object.keys(sections).filter((key) => !sections[key]),
 
-    /* readiness — derived from projection + validation, nothing else */
-    canApprove: isApprovableStage(state.stage) && validation.ok,
+    /* readiness — approve follows the server (submitted/pending review).
+       Publish still requires an empty blocker list. */
+    canApprove: isApprovableStage(state.stage),
     readyToPublish: state.stage === WORKFLOW_STAGES.APPROVED && blocking.length === 0,
     missingInformation: blocking.length > 0,
   };

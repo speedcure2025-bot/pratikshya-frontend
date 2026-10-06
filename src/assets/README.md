@@ -5,7 +5,7 @@ This directory is the canonical slot for the PRATIKSHYA FASHON brand logo.
 ## Canonical path
 
 ```
-src/assets/pratikshya_logo.webp
+src/assets/pratikshya_logo.png
 ```
 
 The supplied logo asset must live at this exact path. The reusable `<Brand />`
@@ -28,7 +28,7 @@ present yet.
 
 The component resolves the first match in this order:
 
-1. `pratikshya_logo.webp`
+1. `pratikshya_logo.png`
 2. `pratikshya_logo.png`
 3. `pratikshya_logo.jpg` / `.jpeg`
 4. `pratikshya_logo.svg`

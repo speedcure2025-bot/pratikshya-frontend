@@ -1,42 +1,36 @@
 /**
  * /admin/products/new · /admin/products/:productId/edit
  *
- * The Phase 13 merchandising workspace, wrapped in the Admin shell.
- * Admins (and the Super Admin) hold publishing rights; the editor does
- * the rest against the shared catalogue repository.
+ * Super Admin and Admin share this page with permitted employees —
+ * same Quick Create / full editor. Admin can later Approve & publish
+ * a product they created themselves.
  */
 
 import { useParams } from "react-router-dom";
 import AdminPage from "../../components/admin/AdminPage";
-import ProductEditor from "../../components/products/ProductEditor";
+import ProductCreateWorkspace, {
+  productCreateDescription,
+  productCreateTitle,
+  useProductCreateFlow,
+} from "../../components/products/ProductCreateWorkspace";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
 export default function ProductForm() {
   const { productId } = useParams();
   const { admin } = useAdminAuth();
+  const useQuick = useProductCreateFlow(productId);
 
   const actor = admin
-    ? { adminId: admin.adminId, name: admin.name || admin.fullName || "Administrator" }
+    ? { id: admin.id, adminId: admin.adminId, name: admin.name || admin.fullName || "Administrator" }
     : null;
 
   return (
     <AdminPage
       eyebrow="Business / Products"
-      title={
-        productId ? (
-          <>
-            Edit <span className="italic text-accent">product.</span>
-          </>
-        ) : (
-          <>
-            New <span className="italic text-accent">product.</span>
-          </>
-        )
-      }
-      description="The complete merchandising record — identity, category, pricing, variants, content, media, SEO and publishing. One shared catalogue serves the storefront, the portals and every future surface."
+      title={productCreateTitle(productId, useQuick)}
+      description={productCreateDescription(useQuick)}
     >
-      <ProductEditor
-        key={productId ?? "new"}
+      <ProductCreateWorkspace
         productId={productId}
         portal="admin"
         actor={actor}

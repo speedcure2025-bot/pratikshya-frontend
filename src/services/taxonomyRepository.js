@@ -173,13 +173,11 @@ export const taxonomyRepository = {
    * ── Admin reads: server-resolved, ANY lifecycle status ──────────────────
    */
   /**
-   * Admin category option list — the product editor's write surface reads
-   * the ADMIN taxonomy endpoint, which returns every lifecycle state
-   * (DRAFT / ACTIVE / ARCHIVED), so an admin-created category that is not yet
-   * ACTIVE is still assignable. The storefront `categoryOptions()` stays
-   * ACTIVE-only; this is the editor-only, id-valued surface.
+   * Admin category records — every lifecycle state from GET /admin/categories.
+   * The taxonomy desk lists these as-is. Product write surfaces must use
+   * `loadAssignableCategoryOptions`: the backend only accepts ACTIVE nodes.
    */
-  loadCategoryOptions: async () => {
+  loadAdminCategories: async () => {
     let result = await apiAdminListCategories();
     if (!result.ok) {
       result = await apiListCategories({ status: "ALL" });
@@ -189,10 +187,25 @@ export const taxonomyRepository = {
       : taxonomyRepository.categories();
     return {
       ok: true,
-      items: rawItems
-        .map((entry) => asCategory(entry))
-        .sort(byOrder)
-        .map((entry) => ({ id: entry.id, label: entry.name, value: entry.id })),
+      items: rawItems.map((entry) => asCategory(entry)).sort(byOrder),
+    };
+  },
+
+  loadCategoryOptions: async () => {
+    const result = await taxonomyRepository.loadAdminCategories();
+    return {
+      ok: true,
+      items: result.items.map((entry) => ({ id: entry.id, label: entry.name, value: entry.id })),
+    };
+  },
+
+  loadAssignableCategoryOptions: async () => {
+    const result = await taxonomyRepository.loadAdminCategories();
+    return {
+      ok: true,
+      items: result.items
+        .filter(active)
+        .map((entry) => ({ id: entry.id, label: entry.name, value: entry.id, slug: entry.slug, name: entry.name })),
     };
   },
 
@@ -217,6 +230,11 @@ export const taxonomyRepository = {
         .map((entry) => asSubcategory({ ...entry, categoryId: entry.categoryId ?? categoryId }))
         .sort(byOrder),
     };
+  },
+  loadAssignableSubcategories: async (categoryId) => {
+    const result = await taxonomyRepository.loadSubcategories(categoryId);
+    if (!result.ok) return result;
+    return { ok: true, items: result.items.filter(active) };
   },
   loadCollection: async (idOrSlug) => {
     if (!idOrSlug) return { ok: false, error: "No collection id was provided.", status: 0, data: null };

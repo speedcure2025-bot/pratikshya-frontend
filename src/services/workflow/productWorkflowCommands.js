@@ -519,8 +519,8 @@ export const approveProduct = (productId, actor = null, options = {}) => {
     };
   }
 
-  const validation = runValidation(product, "approve");
-  if (!validation.ok) return validationFailure(validation, actor);
+  /* Approval matches the server: pending-review only. Publish checklist
+     (cover, pricing, description) is enforced on publish, not here. */
 
   const result = catalogRepository.updateProduct(
     productId,

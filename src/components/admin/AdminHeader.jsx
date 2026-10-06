@@ -17,7 +17,7 @@ import { Brand, transition } from "../../design-system";
  * pretending to carry unread business events.
  */
 export default function AdminHeader({ navOpen, onToggleNav, menuButtonRef }) {
-  const { admin, signOut } = useAdminAuth();
+  const { admin, signOut, isSuperAdmin } = useAdminAuth();
   const navigate = useNavigate();
   const displayName = adminDisplayName(admin);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,16 +66,18 @@ export default function AdminHeader({ navOpen, onToggleNav, menuButtonRef }) {
             variant="lockup"
             theme="dark"
             wordmark={ADMIN_BRAND.name}
-            subtitle={`${ADMIN_BRAND.portal} · ${ADMIN_BRAND.subtitle}`}
+            subtitle={isSuperAdmin ? undefined : `${ADMIN_BRAND.portal} · ${ADMIN_BRAND.subtitle}`}
             className="min-w-0"
           />
         </div>
 
-        <div className="hidden min-w-0 flex-1 px-6 xl:block">
-          <p className="truncate font-ui text-[11px] uppercase tracking-[.2em] text-ash">
-            {ADMIN_BRAND.subtitle}
-          </p>
-        </div>
+        {!isSuperAdmin && (
+          <div className="hidden min-w-0 flex-1 px-6 xl:block">
+            <p className="truncate font-ui text-[11px] uppercase tracking-[.2em] text-ash">
+              {ADMIN_BRAND.subtitle}
+            </p>
+          </div>
+        )}
 
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
