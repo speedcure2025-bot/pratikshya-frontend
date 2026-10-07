@@ -48,6 +48,19 @@ export const teamEmployeeIds = (actor, employees = []) => {
   return actor.employeeId ? [actor.employeeId] : [];
 };
 
+/**
+ * Attendance scope is stricter than team scope: Admin / Super Admin accounts
+ * see every employee's attendance; everyone else sees only their own.
+ * (The backend enforces the same rule — this keeps the UI mirror honest.)
+ */
+export const attendanceEmployeeIds = (actor, employees = []) => {
+  const list = Array.isArray(employees) ? employees : [];
+  if (!actor) return [];
+  const adminLevel = actor.accountLevel === "ADMIN" || actor.accountLevel === "SUPER_ADMIN";
+  if (isAdminActor(actor) || adminLevel) return list.map((person) => person.employeeId);
+  return actor.employeeId ? [actor.employeeId] : [];
+};
+
 export const isInScope = (actor, employeeId, employees = []) => {
   if (!actor || !employeeId) return false;
   if (actor.employeeId && actor.employeeId === employeeId) return true;
@@ -56,7 +69,8 @@ export const isInScope = (actor, employeeId, employees = []) => {
 
 export const canViewAttendance = (actor, employeeId, employees = []) => {
   if (!canUsePermission(actor, PERMISSIONS.ATTENDANCE_VIEW) && !isAdminActor(actor)) return false;
-  return isInScope(actor, employeeId, employees);
+  if (!actor || !employeeId) return false;
+  return attendanceEmployeeIds(actor, employees).includes(employeeId);
 };
 
 export const canCheckOwnAttendance = (actor) =>
@@ -104,6 +118,7 @@ export default {
   actorEmployeeId,
   canUsePermission,
   teamEmployeeIds,
+  attendanceEmployeeIds,
   isInScope,
   canViewAttendance,
   canCheckOwnAttendance,

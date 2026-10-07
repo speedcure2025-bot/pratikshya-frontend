@@ -90,8 +90,8 @@ export const PERMISSIONS = {
   PROFILE_EDIT: "profile.edit",
 
   ATTENDANCE_VIEW: "attendance.view",
-  ATTENDANCE_CHECKIN: "attendance.checkin",
-  ATTENDANCE_CHECKOUT: "attendance.checkout",
+  ATTENDANCE_CHECKIN: "attendance.checkIn",
+  ATTENDANCE_CHECKOUT: "attendance.checkOut",
   ATTENDANCE_MANAGE: "attendance.manage",
   ATTENDANCE_CORRECT: "attendance.correct",
 
