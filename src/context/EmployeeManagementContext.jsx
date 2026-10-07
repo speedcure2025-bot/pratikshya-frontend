@@ -1,7 +1,7 @@
 /**
  * PRATIKSHYA FASHON — Employee management context.
  *
- * Shared employee repository state. Super Admin account-management actions
+ * Shared employee repository state. Admin account-management actions
  * are thin wrappers around employeeService and carry the signed-in Admin
  * actor into its authorization gate. Employee surfaces receive read-only
  * operational data plus the deliberately narrow own-profile action.
@@ -27,7 +27,7 @@ import {
   apiAdminResetEmployeePassword,
   apiAdminUpdateEmployeePermissions,
 } from "../services/api/employeesApi";
-import { canManageEmployeeAccounts, isSuperEmployeeAccount } from "../config/adminAccess";
+import { canManageEmployeeAccounts } from "../config/adminAccess";
 import { getRoleLabel, isKnownRole } from "../config/employeeRoles";
 import { getDepartmentLabel, getSectionLabel, getStoreLabel } from "../config/employeeDepartments";
 import { getStatusLabel } from "../config/employeeStatus";
@@ -66,26 +66,20 @@ export function EmployeeManagementProvider({ children }) {
 
   /**
    * Which isolated session may drive the account-management API right now?
-   * "admin" for Admin-workspace accounts, "employee" for a SUPER_EMPLOYEE
-   * (the SAME endpoints, the SAME hierarchy checks server-side), null when
-   * neither applies. Legacy local-store actions stay available for offline
-   * development exactly as before.
+   * "admin" for Admin-workspace accounts, null when neither applies.
+   * Legacy local-store actions stay available for offline development
+   * exactly as before.
    */
   const resolveAccountScope = useCallback(() => {
-    if (typeof window !== "undefined" && window.location.pathname.startsWith("/employee")) {
-      if (getAccessToken("employee") && isSuperEmployeeAccount(employeeActor)) return "employee";
-    }
     if (getAccessToken("admin")) return "admin";
-    if (getAccessToken("employee") && isSuperEmployeeAccount(employeeActor)) return "employee";
     return null;
-  }, [employeeActor]);
+  }, []);
   const [activity, setActivity] = useState(() => loadActivity());
   const [isWorking, setIsWorking] = useState(false);
 
   // Sync staff list from backend. The server is authoritative — no seed.
   // Admin-workspace sessions ask for the full roster (ADMIN / SUPER_ADMIN
-  // included). SUPER_EMPLOYEE sessions omit include_admins so they cannot
-  // enumerate admin-domain accounts.
+  // included).
   useEffect(() => {
     const scope = resolveAccountScope();
     if (!scope) return;
@@ -472,7 +466,7 @@ export function EmployeeManagementProvider({ children }) {
     [activity]
   );
 
-  const canManageEmployees = canManageEmployeeAccounts(admin) || isSuperEmployeeAccount(employeeActor);
+  const canManageEmployees = canManageEmployeeAccounts(admin);
 
   const value = useMemo(
     () => ({

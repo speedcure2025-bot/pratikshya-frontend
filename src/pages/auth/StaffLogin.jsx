@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle, ArrowRight, Eye, EyeOff, KeyRound } from "lucide-react";
 import { AtelierButton, Brand, Rule } from "../../design-system";
-import { sanitizeAdminReturnUrl } from "../../config/adminNavigation";
+import { sanitizeAdminReturnUrl, sanitizeSuperAdminReturnUrl } from "../../config/adminNavigation";
 import { sanitizeEmployeeReturnUrl } from "../../config/employeeNavigation";
 import { homeForAccountLevel } from "../../config/rbacModel";
 import { useAdminAuth } from "../../context/AdminAuthContext";
@@ -63,17 +63,21 @@ export default function StaffLogin() {
     // Sync the owning workspace context with the freshly-issued, scoped
     // session (both contexts re-validate against the backend), then route
     // to the destination the SERVER resolved. The workspace home comes from
-    // the authoritative accountLevel (SUPER_ADMIN/ADMIN → /admin,
-    // SUPER_EMPLOYEE/EMPLOYEE → /employee); `workspace` is only a fallback
-    // for sessions that predate the accountLevel field. returnTo is honored
-    // only when it belongs to the resolved workspace.
+    // the authoritative accountLevel (SUPER_ADMIN → /super-admin,
+    // ADMIN → /admin, SUPER_EMPLOYEE/EMPLOYEE → /employee); `workspace` is
+    // only a fallback for sessions that predate the accountLevel field.
+    // returnTo is honored only when it belongs to the resolved workspace.
     const home = homeForAccountLevel(result.accountLevel) ??
       (result.workspace === "admin" ? "/admin" : "/employee");
-    const returnTo = home === "/admin"
-      ? sanitizeAdminReturnUrl(searchParams.get("returnTo"))
-      : sanitizeEmployeeReturnUrl(searchParams.get("returnTo"));
 
-    if (home === "/admin") {
+    const isAdminWorkspace = home === "/admin" || home === "/super-admin";
+    const returnTo = home === "/super-admin"
+      ? sanitizeSuperAdminReturnUrl(searchParams.get("returnTo"))
+      : isAdminWorkspace
+        ? sanitizeAdminReturnUrl(searchParams.get("returnTo"))
+        : sanitizeEmployeeReturnUrl(searchParams.get("returnTo"));
+
+    if (isAdminWorkspace) {
       const session = await refreshAdminSession();
       setIsSubmitting(false);
       if (!session?.isAuthenticated) {

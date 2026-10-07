@@ -15,7 +15,7 @@ import { isAccessBlocked } from "../../../config/employeeStatus";
 import { getRoleLabel } from "../../../config/employeeRoles";
 import { ACCOUNT_LEVELS, ACCOUNT_LEVEL_META, CAPABILITY_GROUPS } from "../../../config/rbacModel";
 import { employeeFullName, formatEmployeeDateTime, staffHrefId } from "../../../utils/employee";
-import { EMPLOYEE_TEAM_ACCESS_BASE } from "./employeesBase";
+import { useEmployeesBase } from "./employeesBase";
 
 const actionCopy = {
   activate: {
@@ -43,7 +43,7 @@ const actionCopy = {
 export default function AdminEmployeeDetail({ basePath } = {}) {
   const { employeeId } = useParams();
   const location = useLocation();
-  const base = basePath ?? (location.pathname.startsWith(EMPLOYEE_TEAM_ACCESS_BASE) ? EMPLOYEE_TEAM_ACCESS_BASE : "/admin/employees");
+  const base = useEmployeesBase(basePath);
   const {
     getEmployee,
     loadEmployee,

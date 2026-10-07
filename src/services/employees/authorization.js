@@ -16,7 +16,6 @@ import {
 } from "../../config/employeePermissions";
 import { requiredPermissionForPath } from "../../config/employeeNavigation";
 import {
-  ACCOUNT_LEVELS,
   EMPLOYEE_SELF_SERVICE_PERMISSIONS,
   holdsCapability,
 } from "../../config/rbacModel";
@@ -34,23 +33,9 @@ export const hasPermission = (employee, permission) => {
 
   const granted = Array.isArray(employee.permissions) ? employee.permissions : [];
 
-  /* People-admin keys are Admin-domain for a plain EMPLOYEE. SUPER_EMPLOYEE
-     may hold them through people.view / people.manage (backend ceiling). */
+  /* People-admin keys (employees.view, employees.create, etc.) are
+     Admin-domain only — no employee-domain account may hold them. */
   if (isEmployeeAccountPermission(permission)) {
-    if (employee.accountLevel !== ACCOUNT_LEVELS.SUPER_EMPLOYEE) return false;
-    if (holdsCapability(granted, permission)) return true;
-    if (
-      holdsCapability(granted, "people.manage") &&
-      permission !== PERMISSIONS.EMPLOYEES_MANAGE_PERMISSIONS
-    ) {
-      return true;
-    }
-    if (
-      permission === PERMISSIONS.EMPLOYEES_VIEW &&
-      (holdsCapability(granted, "people.view") || holdsCapability(granted, "people.manage"))
-    ) {
-      return true;
-    }
     return false;
   }
 

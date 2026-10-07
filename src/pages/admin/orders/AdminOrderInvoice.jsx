@@ -7,6 +7,7 @@ import { formatINR } from "../../../utils/shopping";
 import { formatOrderDate } from "../../../utils/orders";
 import { formatPhone } from "../../../utils/validation";
 import { getPaymentStatus } from "../../../config/orderConfig";
+import { useAdminAuth } from "../../../context/AdminAuthContext";
 
 function Row({ label, value, strong = false }) {
   return (
@@ -34,6 +35,8 @@ function Row({ label, value, strong = false }) {
  */
 export default function AdminOrderInvoice() {
   const { orderId } = useParams();
+  const { isSuperAdmin } = useAdminAuth();
+  const prefix = isSuperAdmin ? "/super-admin" : "/admin";
 
   const [order, setOrder] = useState(null);
   const [invoice, setInvoice] = useState(null);
@@ -93,7 +96,7 @@ export default function AdminOrderInvoice() {
               Try again
             </AtelierButton>
           ) : null}
-          <Link to="/admin/orders" className="font-ui text-sm text-brass hover:text-accent">
+          <Link to={`${prefix}/orders`} className="font-ui text-sm text-brass hover:text-accent">
             Back to orders
           </Link>
         </div>
@@ -122,7 +125,7 @@ export default function AdminOrderInvoice() {
           <AtelierButton variant="outline" size="chip" onClick={() => window.print()}>
             Print / PDF
           </AtelierButton>
-          <AtelierButton as={Link} to={`/admin/orders/${order.id}`} variant="outline" size="chip">
+          <AtelierButton as={Link} to={`${prefix}/orders/${order.id}`} variant="outline" size="chip">
             Back to order
           </AtelierButton>
         </>

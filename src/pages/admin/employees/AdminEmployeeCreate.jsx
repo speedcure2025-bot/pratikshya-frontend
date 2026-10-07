@@ -192,7 +192,7 @@ export default function AdminEmployeeCreate({ basePath } = {}) {
           </p>
         </AdminPanel>
 
-        <AdminPanel eyebrow="Operational access" title={capabilityDriven ? "Delegated capabilities" : "Permissions"}>
+        <AdminPanel eyebrow="Operational access" title={capabilityDriven ? "Delegated capabilities" : "Permissions"} bodyClassName="max-h-[62vh] overflow-y-auto">
           {capabilityDriven ? (
             <>
               <label className="mb-4 flex items-start gap-3 font-ui text-sm text-ink">

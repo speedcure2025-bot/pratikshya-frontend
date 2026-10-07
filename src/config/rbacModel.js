@@ -1,44 +1,44 @@
 /**
  * PRATIKSHYA FASHON — unified account model (frontend mirror).
  *
- * ONE shared constants module for the four account levels, the account
+ * ONE shared constants module for the three account levels, the account
  * creation matrix and the consolidated capability groups. The backend
  * authority is `app/core/rbac.py`; `rbacContract.test.js` pins the strings so
  * the two vocabularies can never silently diverge (§36).
  *
  * Rules encoded here (mirrored + ENFORCED server-side — UI filtering is
  * presentation, never security):
- *   SUPER_ADMIN creates: SUPER_ADMIN, ADMIN, SUPER_EMPLOYEE, EMPLOYEE
- *   ADMIN       creates: ADMIN, SUPER_EMPLOYEE, EMPLOYEE
- *   SUPER_EMPLOYEE creates: SUPER_EMPLOYEE, EMPLOYEE
+ *   SUPER_ADMIN creates: ADMIN, EMPLOYEE
+ *   ADMIN       creates: ADMIN, EMPLOYEE
  *   EMPLOYEE    creates: nothing
+ *
+ * NOTE: SUPER_ADMIN cannot create another SUPER_ADMIN. There is only one
+ * system owner — created once via the bootstrap endpoint.
  */
 
 export const ACCOUNT_LEVELS = Object.freeze({
   SUPER_ADMIN: "SUPER_ADMIN",
   ADMIN: "ADMIN",
-  SUPER_EMPLOYEE: "SUPER_EMPLOYEE",
   EMPLOYEE: "EMPLOYEE",
 });
 
 export const ACCOUNT_LEVEL_ORDER = Object.freeze([
   "SUPER_ADMIN",
   "ADMIN",
-  "SUPER_EMPLOYEE",
   "EMPLOYEE",
 ]);
 
 export const ACCOUNT_LEVEL_META = Object.freeze({
   SUPER_ADMIN: { label: "Super Admin", workspace: "admin", description: "System owner — unrestricted authority." },
   ADMIN: { label: "Admin", workspace: "admin", description: "Assigned capabilities; never above Super Admin." },
-  SUPER_EMPLOYEE: { label: "Super Employee", workspace: "employee", description: "Elevated employee; employee-domain authority only." },
   EMPLOYEE: { label: "Employee", workspace: "employee", description: "Operational account within assigned capabilities." },
 });
 
 export const CREATABLE_LEVELS = Object.freeze({
-  SUPER_ADMIN: Object.freeze(["SUPER_ADMIN", "ADMIN", "SUPER_EMPLOYEE", "EMPLOYEE"]),
-  ADMIN: Object.freeze(["ADMIN", "SUPER_EMPLOYEE", "EMPLOYEE"]),
-  SUPER_EMPLOYEE: Object.freeze(["SUPER_EMPLOYEE", "EMPLOYEE"]),
+  // SUPER_ADMIN cannot create another SUPER_ADMIN — only one system owner.
+  SUPER_ADMIN: Object.freeze(["ADMIN", "EMPLOYEE"]),
+  // ADMIN cannot create another ADMIN — only SUPER_ADMIN may grant admin-level accounts.
+  ADMIN: Object.freeze(["EMPLOYEE"]),
   EMPLOYEE: Object.freeze([]),
 });
 
@@ -55,7 +55,7 @@ export const workspaceForLevel = (level) => ACCOUNT_LEVEL_META[level]?.workspace
  * `accountLevel` — never the typed identifier, the selected tab or the page
  * the user came from — decides the workspace home.
  *
- *   SUPER_ADMIN    → /admin
+ *   SUPER_ADMIN    → /super-admin  (exclusive super-admin workspace)
  *   ADMIN          → /admin
  *   SUPER_EMPLOYEE → /employee
  *   EMPLOYEE       → /employee
@@ -64,9 +64,9 @@ export const workspaceForLevel = (level) => ACCOUNT_LEVEL_META[level]?.workspace
 export const homeForAccountLevel = (level) => {
   switch (level) {
     case ACCOUNT_LEVELS.SUPER_ADMIN:
+      return "/super-admin";
     case ACCOUNT_LEVELS.ADMIN:
       return "/admin";
-    case ACCOUNT_LEVELS.SUPER_EMPLOYEE:
     case ACCOUNT_LEVELS.EMPLOYEE:
       return "/employee";
     default:
@@ -218,11 +218,8 @@ export function holdsCapability(granted, required) {
   return expandEffectivePermissions(granted).has(required);
 }
 
-/** Capabilities that must never be granted to Super Employee or Employee. */
+/** Capabilities that must never be granted to Employee accounts. */
 export const ADMIN_ONLY_CAPABILITIES = Object.freeze(["settings.manage", "people.security"]);
-
-const employeeDomainTarget = (targetLevel) =>
-  targetLevel === ACCOUNT_LEVELS.SUPER_EMPLOYEE || targetLevel === ACCOUNT_LEVELS.EMPLOYEE;
 
 const withoutAdminOnly = (codes) => {
   const next = new Set(codes);
@@ -236,11 +233,11 @@ export function delegableCapabilities(creator, targetLevel) {
   const granted = creator?.permissions ?? [];
   const unrestricted = level === ACCOUNT_LEVELS.SUPER_ADMIN || granted.includes("*");
   if (unrestricted) {
-    if (!employeeDomainTarget(targetLevel)) return null;
+    if (targetLevel !== ACCOUNT_LEVELS.EMPLOYEE) return null;
     return withoutAdminOnly(CAPABILITY_CODES);
   }
   const ceiling = expandEffectivePermissions(granted);
-  if (employeeDomainTarget(targetLevel) || level === ACCOUNT_LEVELS.SUPER_EMPLOYEE) {
+  if (targetLevel === ACCOUNT_LEVELS.EMPLOYEE) {
     return withoutAdminOnly(ceiling);
   }
   return ceiling;

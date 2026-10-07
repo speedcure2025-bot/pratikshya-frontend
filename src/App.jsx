@@ -18,6 +18,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import EmployeeProtectedRoute from "./components/employee/EmployeeProtectedRoute";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import AdminEmployeeManagementRoute from "./components/admin/AdminEmployeeManagementRoute";
+import SuperAdminProtectedRoute from "./components/admin/SuperAdminProtectedRoute";
 import CustomerLayout from "./layouts/CustomerLayout";
 import EmployeeLayout from "./layouts/EmployeeLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -39,8 +40,8 @@ const SignIn = lazy(() => import("./pages/auth/SignIn"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
-// ONE canonical staff login for all four account levels (SUPER_ADMIN, ADMIN,
-// SUPER_EMPLOYEE, EMPLOYEE). The former Admin/Employee login routes now
+// ONE canonical staff login for all three account levels (SUPER_ADMIN, ADMIN,
+// EMPLOYEE). The former Admin/Employee login routes now
 // redirect here — there is a single login experience, not two.
 const StaffLogin = lazy(() => import("./pages/auth/StaffLogin"));
 
@@ -259,18 +260,94 @@ export default function App() {
                           <Route path="/admin/warehouses" element={<Navigate to="/admin" replace />} />
                           <Route path="/admin/stock-movements" element={<Navigate to="/admin" replace />} />
                           <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                          <Route path="/admin/analytics/sales" element={<AdminAnalytics />} />
+                          <Route path="/admin/analytics/products" element={<AdminAnalytics />} />
+                          <Route path="/admin/analytics/customers" element={<AdminAnalytics />} />
+                          <Route path="/admin/analytics/inventory" element={<AdminAnalytics />} />
+                          <Route path="/admin/analytics/returns" element={<AdminAnalytics />} />
+                          <Route path="/admin/analytics/offers" element={<AdminAnalytics />} />
                           <Route path="/admin/ai-assistant" element={<AiBusinessAssistant />} />
-                          {/* Legacy analytics aliases — one canonical screen with internal
-                              tabs; old URLs redirect instead of re-registering the page. */}
-                          <Route path="/admin/analytics/sales" element={<Navigate to="/admin/analytics" replace />} />
-                          <Route path="/admin/analytics/products" element={<Navigate to="/admin/analytics" replace />} />
-                          <Route path="/admin/analytics/customers" element={<Navigate to="/admin/analytics" replace />} />
-                          <Route path="/admin/analytics/inventory" element={<Navigate to="/admin/analytics" replace />} />
-                          <Route path="/admin/analytics/returns" element={<Navigate to="/admin/analytics" replace />} />
-                          <Route path="/admin/analytics/offers" element={<Navigate to="/admin/analytics" replace />} />
                           <Route path="/admin/settings" element={<AdminSettings />} />
 
                           <Route path="/admin/*" element={<AdminNotFound />} />
+                        </Route>
+                      </Route>
+
+                      {/* ── SUPER ADMIN workspace (SUPER_ADMIN only) ── */}
+                      <Route element={<SuperAdminProtectedRoute />}>
+                        <Route element={<AdminLayout />}>
+                          <Route path="/super-admin" element={<AdminDashboard />} />
+                          <Route path="/super-admin/dashboard" element={<Navigate to="/super-admin" replace />} />
+
+                          <Route element={<AdminEmployeeManagementRoute requireWrite />}>
+                            <Route path="/super-admin/employees/new" element={<AdminEmployeeCreate />} />
+                            <Route path="/super-admin/employees/:employeeId/edit" element={<AdminEmployeeEdit />} />
+                          </Route>
+                          <Route element={<AdminEmployeeManagementRoute />}>
+                            <Route path="/super-admin/employees" element={<AdminEmployees />} />
+                            <Route path="/super-admin/employees/:employeeId" element={<AdminEmployeeDetail />} />
+                          </Route>
+
+                          <Route path="/super-admin/activity" element={<Navigate to="/super-admin" replace />} />
+                          <Route path="/super-admin/profile" element={<AdminProfile />} />
+
+                          <Route path="/super-admin/products" element={<AdminProducts />} />
+                          <Route path="/super-admin/products/review" element={<AdminProductReview />} />
+                          <Route path="/super-admin/products/new" element={<ProductForm />} />
+                          <Route path="/super-admin/products/:productId/edit" element={<ProductForm />} />
+                          <Route path="/super-admin/products/:productId" element={<AdminProductDetail />} />
+                          <Route path="/super-admin/products/:productId/media" element={<AdminProductMedia />} />
+
+                          <Route path="/super-admin/media" element={<AdminMediaLibrary />} />
+                          <Route path="/super-admin/media/upload" element={<AdminMediaUpload />} />
+                          <Route path="/super-admin/media/review" element={<Navigate to="/super-admin/media" replace />} />
+                          <Route path="/super-admin/media/product-mapping" element={<Navigate to="/super-admin/media" replace />} />
+                          <Route path="/super-admin/media/:mediaId" element={<Navigate to="/super-admin/media" replace />} />
+                          <Route path="/super-admin/media/marketing" element={<AdminMarketingMedia />} />
+
+                          <Route path="/super-admin/categories" element={<AdminCategories />} />
+                          <Route path="/super-admin/categories/new" element={<AdminCategoryForm />} />
+                          <Route path="/super-admin/categories/:categoryId/edit" element={<AdminCategoryForm />} />
+                          <Route path="/super-admin/categories/:categoryId/subcategories" element={<AdminCategoryDetail />} />
+                          <Route path="/super-admin/categories/:categoryId" element={<AdminCategoryDetail />} />
+
+                          <Route path="/super-admin/collections" element={<AdminCollections />} />
+                          <Route path="/super-admin/collections/new" element={<AdminCollectionForm />} />
+                          <Route path="/super-admin/collections/:collectionId/edit" element={<AdminCollectionForm />} />
+                          <Route path="/super-admin/collections/:collectionId/products" element={<AdminCollectionDetail />} />
+                          <Route path="/super-admin/collections/:collectionId" element={<AdminCollectionDetail />} />
+
+                          <Route path="/super-admin/offers" element={<AdminOffers />} />
+                          <Route path="/super-admin/offers/new" element={<AdminOfferFormPage />} />
+                          <Route path="/super-admin/offers/:offerId/edit" element={<AdminOfferFormPage />} />
+                          <Route path="/super-admin/offers/:offerId" element={<AdminOfferDetail />} />
+
+                          <Route path="/super-admin/orders" element={<AdminOrders />} />
+                          <Route path="/super-admin/orders/:orderId" element={<AdminOrderDetail />} />
+                          <Route path="/super-admin/orders/:orderId/invoice" element={<AdminOrderInvoice />} />
+
+                          <Route path="/super-admin/customers" element={<AdminCustomers />} />
+                          <Route path="/super-admin/customers/:customerId" element={<AdminCustomerDetail />} />
+
+                          <Route path="/super-admin/returns" element={<AdminReturns />} />
+                          <Route path="/super-admin/returns/:returnId" element={<AdminReturnDetail />} />
+
+                          <Route path="/super-admin/inventory" element={<Navigate to="/super-admin" replace />} />
+                          <Route path="/super-admin/inventory/*" element={<Navigate to="/super-admin" replace />} />
+                          <Route path="/super-admin/warehouses" element={<Navigate to="/super-admin" replace />} />
+
+                          <Route path="/super-admin/analytics" element={<AdminAnalytics />} />
+                          <Route path="/super-admin/analytics/sales" element={<AdminAnalytics />} />
+                          <Route path="/super-admin/analytics/products" element={<AdminAnalytics />} />
+                          <Route path="/super-admin/analytics/customers" element={<AdminAnalytics />} />
+                          <Route path="/super-admin/analytics/inventory" element={<AdminAnalytics />} />
+                          <Route path="/super-admin/analytics/returns" element={<AdminAnalytics />} />
+                          <Route path="/super-admin/analytics/offers" element={<AdminAnalytics />} />
+
+                          <Route path="/super-admin/settings" element={<AdminSettings />} />
+                          <Route path="/super-admin/ai-assistant" element={<AiBusinessAssistant />} />
+
+                          <Route path="/super-admin/*" element={<AdminNotFound />} />
                         </Route>
                       </Route>
 
@@ -329,14 +406,6 @@ export default function App() {
                           <Route path="/employee/styling/wedding" element={<EmployeeDesk />} />
                           <Route path="/employee/sales" element={<EmployeeDesk />} />
                           <Route path="/employee/team" element={<EmployeeDesk />} />
-                          {/* SUPER_EMPLOYEE self-service: the SAME account
-                              pages the Admin workspace mounts (one data
-                              layer, one authorization matrix — the backend
-                              caps what this token may do). */}
-                          <Route path="/employee/team-access" element={<AdminEmployees />} />
-                          <Route path="/employee/team-access/new" element={<AdminEmployeeCreate />} />
-                          <Route path="/employee/team-access/:employeeId/edit" element={<AdminEmployeeEdit />} />
-                          <Route path="/employee/team-access/:employeeId" element={<AdminEmployeeDetail />} />
                           <Route path="/employee/reports" element={<EmployeeReports />} />
                           <Route path="/employee/reports/sales" element={<EmployeeReports />} />
                           <Route path="/employee/reports/products" element={<EmployeeReports />} />

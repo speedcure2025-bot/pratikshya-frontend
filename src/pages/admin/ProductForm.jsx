@@ -17,9 +17,10 @@ import { useAdminAuth } from "../../context/AdminAuthContext";
 
 export default function ProductForm() {
   const { productId } = useParams();
-  const { admin } = useAdminAuth();
+  const { admin, isSuperAdmin } = useAdminAuth();
   const useQuick = useProductCreateFlow(productId);
 
+  const prefix = isSuperAdmin ? "/super-admin" : "/admin";
   const actor = admin
     ? { id: admin.id, adminId: admin.adminId, name: admin.name || admin.fullName || "Administrator" }
     : null;
@@ -35,7 +36,7 @@ export default function ProductForm() {
         portal="admin"
         actor={actor}
         canPublish
-        exitTo="/admin/products"
+        exitTo={`${prefix}/products`}
       />
     </AdminPage>
   );

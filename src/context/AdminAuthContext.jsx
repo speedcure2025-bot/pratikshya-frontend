@@ -22,6 +22,7 @@ import { ACCOUNT_LEVELS } from "../config/rbacModel";
 import {
   apiSignInStaff,
   apiSignOutAdmin,
+  apiSignOutSuperAdmin,
   apiRestoreAdminSession,
   apiUpdateOwnStaffProfile,
 } from "../services/api/authApi";
@@ -129,13 +130,38 @@ export function AdminAuthProvider({ children }) {
     return result;
   }, []);
 
+  // ── RBAC helpers ──────────────────────────────────────────────────────────
+  // Declared before signOut so the callback can safely reference isSuperAdmin
+  // without hitting a temporal dead zone (const TDZ ReferenceError).
+
+  const isSuperAdmin = Boolean(
+    admin && (
+      admin.accountLevel === ACCOUNT_LEVELS.SUPER_ADMIN ||
+      (!admin.accountLevel && admin.roles?.includes("SUPER_ADMIN"))
+    )
+  );
+  // Any admin-workspace level may enter the portal (SUPER_ADMIN or ADMIN);
+  // per-module access is capability-checked, never workspace-wide.
+  const hasAdminWorkspaceAccess = Boolean(admin && (
+    admin.accountLevel
+      ? admin.accountLevel === ACCOUNT_LEVELS.SUPER_ADMIN || admin.accountLevel === ACCOUNT_LEVELS.ADMIN
+      : admin.role === ACCOUNT_LEVELS.SUPER_ADMIN
+  ));
+
   // ── Sign Out ─────────────────────────────────────────────────────────────
 
   const signOut = useCallback(async () => {
-    await apiSignOutAdmin();
+    // Route to the correct backend endpoint based on account level.
+    // SUPER_ADMIN tokens are rejected by /auth/admin/sign-out (403), so the
+    // dedicated /auth/super-admin/sign-out endpoint must be used instead.
+    if (isSuperAdmin) {
+      await apiSignOutSuperAdmin();
+    } else {
+      await apiSignOutAdmin();
+    }
     clearAdminTokens();
     setSession({ admin: null, isAuthenticated: false });
-  }, []);
+  }, [isSuperAdmin]);
 
   // ── Refresh local session ─────────────────────────────────────────────────
 
@@ -166,22 +192,6 @@ export function AdminAuthProvider({ children }) {
     },
     [admin]
   );
-
-  // ── RBAC helpers ──────────────────────────────────────────────────────────
-
-  const isSuperAdmin = Boolean(
-    admin && (
-      admin.accountLevel === ACCOUNT_LEVELS.SUPER_ADMIN ||
-      (!admin.accountLevel && admin.roles?.includes("SUPER_ADMIN"))
-    )
-  );
-  // Any admin-workspace level may enter the portal (SUPER_ADMIN or ADMIN);
-  // per-module access is capability-checked, never workspace-wide.
-  const hasAdminWorkspaceAccess = Boolean(admin && (
-    admin.accountLevel
-      ? admin.accountLevel === ACCOUNT_LEVELS.SUPER_ADMIN || admin.accountLevel === ACCOUNT_LEVELS.ADMIN
-      : admin.role === ACCOUNT_LEVELS.SUPER_ADMIN
-  ));
 
   const hasPermission = useCallback(
     (permission) => hasAdminPermission(admin, permission),

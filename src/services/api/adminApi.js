@@ -133,13 +133,20 @@ export async function apiAnalyticsOrders() {
  * with the employee list fetched twice per load). Every figure is a bounded
  * backend aggregate in a single response.
  */
-export async function apiAdminDashboardSummary({ days = 7, recentLimit = 5 } = {}) {
+export async function apiAdminDashboardSummary({ days = 7, recentLimit = 5, workspace = "admin" } = {}) {
   const qs = new URLSearchParams({
     days: String(days),
     recent_limit: String(recentLimit),
   });
+  // Super admin sessions use the dedicated /super-admin endpoint (gated by
+  // get_current_super_admin). Plain admin sessions use /admin (get_current_admin).
+  // Both delegate to the same analytics implementation; the split enforces the
+  // correct auth contract on the backend.
+  const endpoint = workspace === "super-admin"
+    ? `/super-admin/dashboard/summary?${qs}`
+    : `/admin/dashboard/summary?${qs}`;
   try {
-    const data = await apiClient.get(`/admin/dashboard/summary?${qs}`, { scope: "admin" });
+    const data = await apiClient.get(endpoint, { scope: "admin" });
     return { ok: true, ...data };
   } catch (primaryErr) {
     const primary = handleError(primaryErr);

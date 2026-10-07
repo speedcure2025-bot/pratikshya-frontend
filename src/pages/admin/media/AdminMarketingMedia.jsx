@@ -12,6 +12,7 @@ import BackendHomeHeroPanel from "../../../components/admin/BackendHomeHeroPanel
 import { upsertServerProducts } from "../../../services/catalogRepository";
 import { addCustomProductToStore } from "../../../services/catalog/catalogStore";
 import { AtelierButton } from "../../../design-system";
+import { useAdminAuth } from "../../../context/AdminAuthContext";
 import {
   MARKETING_PLACEMENT_OPTIONS,
   MEDIA_STATUS,
@@ -73,7 +74,7 @@ const productStatusTone = (status) =>
         : "quiet";
 
 /** A product-based placement panel: catalogue curation + assigned grid. */
-function ProductPlacementPanel({ placement, canCurate }) {
+function ProductPlacementPanel({ placement, canCurate, prefix }) {
   const products = useProducts();
   const productIds = usePlacementProductIds(placement.id);
   const [selectorOpen, setSelectorOpen] = useState(false);
@@ -232,7 +233,7 @@ function ProductPlacementPanel({ placement, canCurate }) {
                   </div>
                   {canCurate ? (
                     <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                      <AtelierButton as={Link} to={`/admin/products/${product.id}`} size="chip" variant="outline">
+                      <AtelierButton as={Link} to={`${prefix}/products/${product.id}`} size="chip" variant="outline">
                         <Eye size={11} aria-hidden="true" /> Preview
                       </AtelierButton>
                       <AtelierButton
@@ -403,6 +404,8 @@ export default function AdminMarketingMedia() {
   const media = useMarketingMedia();
   const metrics = useMediaMetrics();
   const actions = useMediaActions();
+  const { isSuperAdmin } = useAdminAuth();
+  const prefix = isSuperAdmin ? "/super-admin" : "/admin";
 
   const [uploadFor, setUploadFor] = useState(null);
 
@@ -413,7 +416,7 @@ export default function AdminMarketingMedia() {
 
   const renderPlacement = (placement) =>
     placement.mode === PLACEMENT_MODES.PRODUCT ? (
-      <ProductPlacementPanel key={placement.id} placement={placement} canCurate={canCurate} />
+      <ProductPlacementPanel key={placement.id} placement={placement} canCurate={canCurate} prefix={prefix} />
     ) : (
       <GenericPlacementPanel
         key={placement.id}
@@ -431,7 +434,7 @@ export default function AdminMarketingMedia() {
       title="Marketing media"
       description="Editorial artwork and product edits for the storefront, arranged by the section they appear in. Product sections are curated from the catalogue — generic placements keep the artwork upload."
       actions={
-        <AtelierButton as={Link} to="/admin/media" size="chip" variant="outline">
+        <AtelierButton as={Link} to={`${prefix}/media`} size="chip" variant="outline">
           Media library
         </AtelierButton>
       }

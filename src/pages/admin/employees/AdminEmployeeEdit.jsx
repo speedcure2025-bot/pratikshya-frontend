@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminPage from "../../../components/admin/AdminPage";
 import AdminPanel from "../../../components/admin/AdminPanel";
 import EmployeeForm from "../../../components/employee/EmployeeForm";
@@ -17,7 +17,7 @@ import {
   delegableCapabilities,
   workspaceForLevel,
 } from "../../../config/rbacModel";
-import { EMPLOYEE_TEAM_ACCESS_BASE } from "./employeesBase";
+import { useEmployeesBase } from "./employeesBase";
 import { staffHrefId } from "../../../utils/employee";
 
 const draftFrom = (person) => ({
@@ -36,12 +36,9 @@ const draftFrom = (person) => ({
 export default function AdminEmployeeEdit({ basePath } = {}) {
   const { employeeId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   // Follow the workspace we were mounted from (Admin portal vs SUPER_EMPLOYEE
   // self-service) — see employeesBase.js.
-  const base = basePath ?? (location.pathname.startsWith(EMPLOYEE_TEAM_ACCESS_BASE)
-    ? EMPLOYEE_TEAM_ACCESS_BASE
-    : "/admin/employees");
+  const base = useEmployeesBase(basePath);
   const { getEmployee, loadEmployee, updateEmployee, isWorking } = useEmployeeManagement();
   const { admin } = useAdminAuth();
   const { employee: employeeActor } = useEmployeeAuth();
@@ -207,6 +204,7 @@ export default function AdminEmployeeEdit({ basePath } = {}) {
         <AdminPanel
           eyebrow="Operational access"
           title={capabilityDriven ? "Delegated capabilities" : "Permissions"}
+          bodyClassName="max-h-[62vh] overflow-y-auto"
           action={
             capabilityDriven ? null : (
               <AtelierButton

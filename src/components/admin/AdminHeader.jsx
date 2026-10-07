@@ -117,7 +117,7 @@ export default function AdminHeader({ navOpen, onToggleNav, menuButtonRef }) {
               <span className="hidden text-left sm:block">
                 <span className="block font-ui text-xs text-ivory">{displayName}</span>
                 <span className="block font-ui text-[10px] uppercase tracking-[.14em] text-ash">
-                  {getAdminRoleLabel(admin?.role)}
+                  {admin?.title || getAdminRoleLabel(admin?.role)}
                 </span>
               </span>
             </button>

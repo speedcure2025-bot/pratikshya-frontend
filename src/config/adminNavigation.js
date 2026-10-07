@@ -202,6 +202,26 @@ export const sanitizeAdminReturnUrl = (url, fallback = "/admin") => {
   return trimmed;
 };
 
+/**
+ * Only same-origin `/super-admin` destinations may be used as a return URL
+ * for the Super Admin workspace. Anything else falls back to /super-admin.
+ */
+export const sanitizeSuperAdminReturnUrl = (url, fallback = "/super-admin") => {
+  if (!url || typeof url !== "string") return fallback;
+  const trimmed = url.trim();
+  if (
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("javascript:") ||
+    trimmed.startsWith("data:") ||
+    !trimmed.startsWith("/super-admin")
+  ) {
+    return fallback;
+  }
+  return trimmed;
+};
+
 export default {
   ADMIN_BRAND,
   ADMIN_NAV_GROUPS,
@@ -210,4 +230,5 @@ export default {
   ADMIN_NAV_ITEMS,
   findAdminNavItem,
   sanitizeAdminReturnUrl,
+  sanitizeSuperAdminReturnUrl,
 };

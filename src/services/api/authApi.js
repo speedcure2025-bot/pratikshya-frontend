@@ -16,6 +16,8 @@
  *   POST /auth/admin/sign-in
  *   POST /auth/admin/sign-up
  *   POST /auth/admin/sign-out
+ *   POST /auth/super-admin/sign-in
+ *   POST /auth/super-admin/sign-out
  *   POST /auth/refresh
  *   GET  /auth/me
  */
@@ -324,6 +326,20 @@ export async function apiSignInAdmin({ adminId, password }) {
 export async function apiSignOutAdmin() {
   try {
     await apiClient.post("/auth/admin/sign-out", {}, { scope: "admin" });
+  } catch { /* best-effort */ }
+  clearTokens("admin");
+  return { ok: true };
+}
+
+/**
+ * POST /auth/super-admin/sign-out
+ * Revokes the SUPER_ADMIN session. The backend enforces SUPER_ADMIN-only
+ * access via get_current_super_admin — plain ADMIN tokens receive 403.
+ * Use this instead of apiSignOutAdmin when the active session is SUPER_ADMIN.
+ */
+export async function apiSignOutSuperAdmin() {
+  try {
+    await apiClient.post("/auth/super-admin/sign-out", {}, { scope: "admin" });
   } catch { /* best-effort */ }
   clearTokens("admin");
   return { ok: true };

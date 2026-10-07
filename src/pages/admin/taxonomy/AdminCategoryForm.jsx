@@ -59,7 +59,8 @@ export const draftFromCategory = (category) => ({
 export default function AdminCategoryForm() {
   const { categoryId } = useParams();
   const navigate = useNavigate();
-  const { admin } = useAdminAuth();
+  const { admin, isSuperAdmin } = useAdminAuth();
+  const prefix = isSuperAdmin ? "/super-admin" : "/admin";
   const actor = admin ? { adminId: admin.adminId, name: admin.name || "Administrator" } : null;
   const isEdit = Boolean(categoryId);
 
@@ -152,7 +153,7 @@ export default function AdminCategoryForm() {
       setError(formatAdminError(result, { entity: "category", action: existing ? "updated" : "created" }));
       return;
     }
-    navigate(`/admin/categories/${result.category?.id ?? existing?.id}`);
+    navigate(`${prefix}/categories/${result.category?.id ?? existing?.id}`);
   };
 
   const shell = (children) => (
@@ -160,7 +161,7 @@ export default function AdminCategoryForm() {
       eyebrow="Business / Taxonomy"
       title={isEdit ? <>Edit <span className="italic text-accent">category.</span></> : <>Create <span className="italic text-accent">category.</span></>}
       description="Categories define what a product is. They power product forms, storefront filters, category pages, search, offers and breadcrumbs."
-      actions={<AtelierButton as={Link} to="/admin/categories" variant="outline" size="chip">Back to categories</AtelierButton>}
+      actions={<AtelierButton as={Link} to={`${prefix}/categories`} variant="outline" size="chip">Back to categories</AtelierButton>}
     >
       {children}
     </AdminPage>
@@ -184,7 +185,7 @@ export default function AdminCategoryForm() {
         </p>
         <div className="flex flex-wrap gap-3">
           <AtelierButton size="chip" onClick={fetchCategory}>Retry</AtelierButton>
-          <AtelierButton as={Link} to="/admin/categories" variant="outline" size="chip">Back to categories</AtelierButton>
+          <AtelierButton as={Link} to={`${prefix}/categories`} variant="outline" size="chip">Back to categories</AtelierButton>
         </div>
       </AdminPanel>
     );
@@ -255,7 +256,7 @@ export default function AdminCategoryForm() {
         </label>
         <div className="flex flex-wrap gap-3 lg:col-span-2">
           <AtelierButton type="submit" size="chip" disabled={saving}>{saving ? "Saving…" : existing ? "Save category" : "Create category"}</AtelierButton>
-          <AtelierButton as={Link} to="/admin/categories" variant="outline" size="chip">Cancel</AtelierButton>
+          <AtelierButton as={Link} to={`${prefix}/categories`} variant="outline" size="chip">Cancel</AtelierButton>
         </div>
       </form>
     </AdminPanel>

@@ -34,8 +34,8 @@ const zeroMetrics = () => ({
 });
 
 /** The whole dashboard in one request. */
-export async function loadDashboardSummary({ days = 7, recentLimit = 5 } = {}) {
-  const result = await apiAdminDashboardSummary({ days, recentLimit });
+export async function loadDashboardSummary({ days = 7, recentLimit = 5, workspace = "admin" } = {}) {
+  const result = await apiAdminDashboardSummary({ days, recentLimit, workspace });
   if (!result.ok) {
     return {
       ok: false,

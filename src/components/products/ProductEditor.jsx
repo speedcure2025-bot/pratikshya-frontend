@@ -84,7 +84,7 @@ export default function ProductEditor({
   portal = "admin",
   actor = null,
   canPublish = false,
-  exitTo = "/admin/products",
+  exitTo = "/",
 }) {
   const navigate = useNavigate();
   const location = useLocation();

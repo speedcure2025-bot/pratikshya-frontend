@@ -45,7 +45,7 @@ export default function ProductQuickCreate({
   portal = "admin",
   actor = null,
   canPublish = false,
-  exitTo = "/admin/products",
+  exitTo = "/",
 }) {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();

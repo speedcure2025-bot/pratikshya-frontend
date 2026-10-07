@@ -29,7 +29,8 @@ const Term = ({ label, value }) => (
 
 export default function AdminCategoryDetail() {
   const { categoryId } = useParams();
-  const { admin } = useAdminAuth();
+  const { admin, isSuperAdmin } = useAdminAuth();
+  const prefix = isSuperAdmin ? "/super-admin" : "/admin";
   const actor = admin ? { adminId: admin.adminId, name: admin.name || "Administrator" } : null;
   const [version, setVersion] = useState(0);
   const [notice, setNotice] = useState("");
@@ -85,7 +86,7 @@ export default function AdminCategoryDetail() {
         </p>
         <div className="flex flex-wrap gap-3">
           <AtelierButton size="chip" onClick={fetchCategory}>Retry</AtelierButton>
-          <AtelierButton as={Link} to="/admin/categories" variant="outline" size="chip">Back to categories</AtelierButton>
+          <AtelierButton as={Link} to={`${prefix}/categories`} variant="outline" size="chip">Back to categories</AtelierButton>
         </div>
       </AdminPage>
     );
@@ -143,7 +144,7 @@ export default function AdminCategoryDetail() {
       description={category.description || "Category record from the central taxonomy repository."}
       actions={
         <>
-          <AtelierButton as={Link} to={`/admin/categories/${category.id}/edit`} size="chip" variant="outline"><Pencil size={12} /> Edit</AtelierButton>
+          <AtelierButton as={Link} to={`${prefix}/categories/${category.id}/edit`} size="chip" variant="outline"><Pencil size={12} /> Edit</AtelierButton>
           {renderLifecycleButtons(TAXONOMY_KIND.CATEGORY, category)}
         </>
       }
@@ -195,7 +196,7 @@ export default function AdminCategoryDetail() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-left">
                 <thead><tr className="border-b border-mist font-ui text-[10px] uppercase tracking-widest text-taupe">{["Product", "SKU", "Subcategory", "Price", "Status"].map((h) => <th key={h} className="px-3 py-3">{h}</th>)}</tr></thead>
-                <tbody>{products.map((product) => <tr key={product.id} className="border-b border-mist/60 font-ui text-sm"><td className="px-3 py-3"><Link to={`/admin/products/${product.id}`} className="font-medium text-ink hover:text-accent">{product.name}</Link></td><td className="px-3 py-3 text-taupe">{product.sku}</td><td className="px-3 py-3">{product.subcategory || "—"}</td><td className="px-3 py-3">{formatINR(product.price)}</td><td className="px-3 py-3"><StatusBadge label={product.status} tone={product.status === "PUBLISHED" ? "ink" : product.status === "ARCHIVED" ? "muted" : "quiet"} /></td></tr>)}</tbody>
+                <tbody>{products.map((product) => <tr key={product.id} className="border-b border-mist/60 font-ui text-sm"><td className="px-3 py-3"><Link to={`${prefix}/products/${product.id}`} className="font-medium text-ink hover:text-accent">{product.name}</Link></td><td className="px-3 py-3 text-taupe">{product.sku}</td><td className="px-3 py-3">{product.subcategory || "—"}</td><td className="px-3 py-3">{formatINR(product.price)}</td><td className="px-3 py-3"><StatusBadge label={product.status} tone={product.status === "PUBLISHED" ? "ink" : product.status === "ARCHIVED" ? "muted" : "quiet"} /></td></tr>)}</tbody>
               </table>
             </div>
           </AdminPanel>
