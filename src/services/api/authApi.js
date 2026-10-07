@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Auth API wrappers.
+ * PRATIKSHYA FASHION — Auth API wrappers.
  *
  * Thin adapters between the three auth contexts and the FastAPI endpoints.
  * Each function returns a normalised { ok, ...data } or { ok: false, error }.

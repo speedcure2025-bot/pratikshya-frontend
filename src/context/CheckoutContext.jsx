@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Checkout session state (Phase 2 — canonical flow).
+ * PRATIKSHYA FASHION — Checkout session state (Phase 2 — canonical flow).
  *
  * The single checkout session: customer, delivery address, delivery
  * method, payment method, current step and the in-flight payment. It
@@ -587,7 +587,7 @@ export function CheckoutProvider({ children }) {
         amount: sessionResult.amountPaise,
         currency: sessionResult.currency ?? "INR",
         order_id: sessionResult.razorpayOrderId,
-        name: "Pratikshya Fashon",
+        name: "Pratikshya Fashion",
         description: "Order Payment",
         prefill: {
           name: prefill.name ?? `${current.customer.firstName} ${current.customer.lastName}`.trim(),

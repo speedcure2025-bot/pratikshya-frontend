@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin Returns (Phase 16.1, consolidation revision)
+ * PRATIKSHYA FASHION — Admin Returns (Phase 16.1, consolidation revision)
  *
  * Premium return operations dashboard with live metrics, search, and
  * context-sensitive action links.

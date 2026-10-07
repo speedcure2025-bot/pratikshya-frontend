@@ -1,6 +1,6 @@
 # Unified Authentication + 4-Level RBAC — Architecture
 
-PRATIKSHYA FASHON · consolidated 2026-09-11 · branch `arena/01a08e85-pfv1`
+PRATIKSHYA FASHION · consolidated 2026-09-11 · branch `arena/01a08e85-pfv1`
 Status: **implemented and test-pinned** (backend `734 passed / 24 skipped / 0 failed`; frontend `425 passed / 1 skipped`; contract tests pin frontend↔backend string identity).
 
 This document is the canonical reference for who may do what, how identity is

@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employees API
+ * PRATIKSHYA FASHION — Employees API
  * Maps to API_CONTRACT.md § EMPLOYEE
  *
  * Admin: CRUD, status, reset-password, permissions, departments, sections, attendance

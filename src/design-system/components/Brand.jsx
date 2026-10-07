@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Reusable Brand component.
+ * PRATIKSHYA FASHION — Reusable Brand component.
  *
  * The single rendering seam for the atelier's brand mark across every
  * surface (storefront header, mobile drawer, footer, checkout, admin portal,
@@ -25,7 +25,7 @@
  *
  * Variants:
  *   - `mark`      — the supplied logo on its own
- *   - `wordmark`  — the typographic wordmark only (`PRATIKSHYA FASHON`)
+ *   - `wordmark`  — the typographic wordmark only (`PRATIKSHYA FASHION`)
  *   - `lockup`    — logo + wordmark together (default)
  *
  * Theme:
@@ -133,7 +133,7 @@ function BrandWordmark({ className, children }) {
 }
 
 /**
- * The reusable PRATIKSHYA FASHON brand component.
+ * The reusable PRATIKSHYA FASHION brand component.
  *
  * Render modes are:
  *   - `mark`     — only the supplied logo image
@@ -153,12 +153,12 @@ export default function Brand({
   variant = "lockup",
   size = "default",
   theme = "light",
-  wordmark = "PRATIKSHYA FASHON",
+  wordmark = "PRATIKSHYA FASHION",
   subtitle,
   eyebrow,
   subtitleClassName = "",
   className = "",
-  alt = "PRATIKSHYA FASHON",
+  alt = "PRATIKSHYA FASHION",
   ...rest
 }) {
   const rootRef = useRef(null);

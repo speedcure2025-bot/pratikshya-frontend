@@ -31,7 +31,7 @@ export default function SignIn() {
 
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = "Sign In — PRATIKSHYA FASHON";
+    document.title = "Sign In — PRATIKSHYA FASHION";
     return () => {
       document.title = prevTitle;
     };
@@ -251,7 +251,7 @@ export default function SignIn() {
             <div className="mt-8 border-t border-mist/70 pt-6 text-center space-y-4">
               <div>
                 <p className="font-ui text-xs text-graphite">
-                  New to PRATIKSHYA FASHON?{" "}
+                  New to PRATIKSHYA FASHION?{" "}
                   <Link
                     to={`/signup${rawReturnTo ? `?returnTo=${encodeURIComponent(rawReturnTo)}` : ""}`}
                     className="font-medium text-ink hover:text-accent transition-colors underline-offset-4 underline ml-1"

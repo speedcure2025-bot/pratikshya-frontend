@@ -68,13 +68,13 @@ export default function AtelierDesign() {
       <AtelierSection rhythm="spacious" width="narrow" className="text-center">
         <EditorialHeading
           size="manifesto"
-          description="PRATIKSHYA FASHON"
+          description="PRATIKSHYA FASHION"
           descriptionClassName={`${eyebrow.caption} text-taupe`}
           spacing={{ title: "mb-4", description: "mb-12" }}
         >
           Our <Accent>Story</Accent>
         </EditorialHeading>
-        <p className={`${body.story} text-graphite max-w-2xl mx-auto`}>PRATIKSHYA FASHON brings together the richness of textile craft and the joy of dressing for life’s most meaningful occasions. From the everyday grace of a cotton saree to bridal splendour, every piece is selected with warmth, intention and respect for tradition.</p>
+        <p className={`${body.story} text-graphite max-w-2xl mx-auto`}>PRATIKSHYA FASHION brings together the richness of textile craft and the joy of dressing for life’s most meaningful occasions. From the everyday grace of a cotton saree to bridal splendour, every piece is selected with warmth, intention and respect for tradition.</p>
       </AtelierSection>
 
     </main>

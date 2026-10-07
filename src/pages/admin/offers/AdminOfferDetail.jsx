@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin offer detail (Phase 17)
+ * PRATIKSHYA FASHION — Admin offer detail (Phase 17)
  */
 
 import { useCallback, useMemo, useState } from "react";

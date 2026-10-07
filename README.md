@@ -1,4 +1,4 @@
-# PRATIKSHYA FASHON — Full-Stack Monorepo
+# PRATIKSHYA FASHION — Full-Stack Monorepo
 
 Ladies-priority retail platform: React + Vite storefront (`frontend/`) backed by a
 feature-based FastAPI API (`backend/`).
@@ -87,7 +87,7 @@ See [`frontend/.env.example`](frontend/.env.example). Nothing here is a secret.
 
 | Variable | Required for | Notes |
 |----------|--------------|-------|
-| `DATABASE_URL` | All DB-backed features | `postgresql+asyncpg://user:password@localhost:5432/pratikshya_fashon` |
+| `DATABASE_URL` | All DB-backed features | `postgresql+asyncpg://user:password@localhost:5432/pratikshya_fashion` |
 | `ALLOWED_ORIGINS` | Browser CORS | Must include the Vite origin, e.g. `http://localhost:5173` |
 | `SECRET_KEY` / `JWT_SECRET_KEY` | Auth | Change from placeholder in any shared environment |
 | `STORAGE_PROVIDER` | Media | `local` (default, no credentials) vs `s3` (future) |

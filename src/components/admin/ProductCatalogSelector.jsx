@@ -19,7 +19,7 @@ import {
 import { cn } from "../../utils/cn";
 
 /**
- * PRATIKSHYA FASHON — Product Catalog Selector.
+ * PRATIKSHYA FASHION — Product Catalog Selector.
  *
  * The primary way a product-based marketing placement is curated. Instead of
  * uploading a product image again, the administrator browses the CANONICAL

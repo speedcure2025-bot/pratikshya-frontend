@@ -1,6 +1,6 @@
 # Admin Consolidation — Final Implementation Report
 
-**PRATIKSHYA FASHON — Admin Portal hardening & consolidation**
+**PRATIKSHYA FASHION — Admin Portal hardening & consolidation**
 Branch `arena/01a08cb3-pfv1` · Commits `aa9bcd0` (routes/nav, later folded) → `825d52d` (DB-load I) → `af32099` (returns) → `21bf20c` (DB-load II) → `0934676` (orders desk) → `b501572` (dedup) → `cc8a977` (RBAC) → `e99c4d0` (AI) → report commit.
 
 > **Note on history.** The sandbox environment restored Git state between working sessions; the early commits `3927865`–`aa9bcd0` were re-folded so that commit `21bf20c` carries the phase-1 route/navigation consolidation together with the DB-load work. Nothing was lost — every file change listed below is present in the tree and verified by tests. Per-session instructions kept all work on the single session branch; no other branch was touched.

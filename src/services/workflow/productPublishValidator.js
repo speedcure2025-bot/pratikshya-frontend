@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Universal publish validator (Phase 2, Step B).
+ * PRATIKSHYA FASHION — Universal publish validator (Phase 2, Step B).
  *
  * The ONE validation orchestration layer for publication. It determines the
  * ACTUAL current truth from the data — it does not copy legacy flags.

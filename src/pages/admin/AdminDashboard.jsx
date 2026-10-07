@@ -125,7 +125,7 @@ export default function AdminDashboard() {
     <AdminPage
       eyebrow="Business overview"
       title={<>{greetingForAdmin()}, <span className="italic text-accent">{adminFirstName(admin)}.</span></>}
-      description="Your PRATIKSHYA FASHON operation at a glance."
+      description="Your PRATIKSHYA FASHION operation at a glance."
       actions={
         <>
           {error ? (

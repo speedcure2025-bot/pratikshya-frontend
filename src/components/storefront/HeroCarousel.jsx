@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Landing hero carousel.
+ * PRATIKSHYA FASHION — Landing hero carousel.
  *
  * An image-first, editorial carousel for the landing page. The fashion
  * photography occupies roughly 85–95% of the frame; eyebrow, a restrained
@@ -94,7 +94,7 @@ const buildSlides = (slides = [], heroMedia = null) => {
       ? (typeof slide.image === "object" ? slide.image : {
             id: slide.id,
             src: slide.image,
-            alt: `${slide.title || "Hero"} — PRATIKSHYA FASHON`,
+            alt: `${slide.title || "Hero"} — PRATIKSHYA FASHION`,
             category: "hero",
           })
       : registeredSrc
@@ -102,7 +102,7 @@ const buildSlides = (slides = [], heroMedia = null) => {
         : {
             id: slide.id || `hero-${index + 1}`,
             src: mediaObjectUrl(CANONICAL_HERO_KEYS[index % CANONICAL_HERO_KEYS.length]),
-            alt: `${slide.title || "Hero"} — PRATIKSHYA FASHON`,
+            alt: `${slide.title || "Hero"} — PRATIKSHYA FASHION`,
             category: "hero",
           };
     return { ...slide, image };
@@ -292,7 +292,7 @@ export default function HeroCarousel({ slides: slideData = [], heroMedia }) {
   return (
     <section
       aria-roledescription="carousel"
-      aria-label="PRATIKSHYA FASHON featured collections"
+      aria-label="PRATIKSHYA FASHION featured collections"
       tabIndex={0}
       onKeyDown={onKeyDown}
       onMouseEnter={() => setHovering(true)}
@@ -320,7 +320,7 @@ export default function HeroCarousel({ slides: slideData = [], heroMedia }) {
           >
             <PratikshyaImage
               image={slide.image}
-              alt={slide.image?.alt ?? `${slide.title} — PRATIKSHYA FASHON`}
+              alt={slide.image?.alt ?? `${slide.title} — PRATIKSHYA FASHION`}
               loading={i === 0 ? "eager" : "lazy"}
               fetchPriority={i === 0 ? "high" : "low"}
               objectPosition={slide.objectPosition}

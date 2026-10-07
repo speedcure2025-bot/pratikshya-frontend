@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Workforce authorization and team scope.
+ * PRATIKSHYA FASHION — Workforce authorization and team scope.
  *
  * Pages hide controls they cannot use. These helpers are the real gate:
  * a typed URL or a forged call still has to pass here.

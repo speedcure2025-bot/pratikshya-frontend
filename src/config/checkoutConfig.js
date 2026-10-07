@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Checkout configuration.
+ * PRATIKSHYA FASHION — Checkout configuration.
  *
  * The single home for checkout-level demo rules: delivery methods and
  * pricing, the cash-on-delivery fee, payment method metadata and the demo

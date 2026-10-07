@@ -47,7 +47,7 @@ const categoryCard = (category, usedIds) => ({
   eyebrow: category.eyebrow || "",
   featured: category.featured,
   image: resolveCategoryCover(category, usedIds),
-  alt: `${category.name} collection at PRATIKSHYA FASHON`,
+  alt: `${category.name} collection at PRATIKSHYA FASHION`,
 });
 
 export default function ShopByCategory({ excludeIds = null }) {

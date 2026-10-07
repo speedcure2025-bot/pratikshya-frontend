@@ -34,7 +34,7 @@ import { getProductStatusLabel } from "../../../config/productCatalogConfig";
 import { categoryLabels } from "../../../data/products/taxonomy";
 
 /**
- * PRATIKSHYA FASHON — Marketing media.
+ * PRATIKSHYA FASHION — Marketing media.
  *
  * The storefront's editorial artwork and product edits, arranged by
  * placement. Each placement is a real seam on the site.

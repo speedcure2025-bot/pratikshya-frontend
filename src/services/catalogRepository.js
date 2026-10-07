@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Catalogue repository (Phase 13).
+ * PRATIKSHYA FASHION — Catalogue repository (Phase 13).
  *
  * The ONE product repository. Customer storefront, admin portal, employee
  * portal, media, cart, wishlist, orders and (later) inventory, analytics
@@ -459,7 +459,7 @@ export const normaliseProductRecord = (raw = {}, index = 0) => {
     name,
     slug,
     sku: raw.sku || "",
-    brand: raw.brand || "Pratikshya Fashon",
+    brand: raw.brand || "Pratikshya Fashion",
     productType: raw.productType || "fashion",
     productCode: raw.productCode || "",
     barcode: raw.barcode || "",

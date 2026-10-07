@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Product editor sections: Product Content, Media,
+ * PRATIKSHYA FASHION — Product editor sections: Product Content, Media,
  * SEO and Publishing (Phase 13).
  *
  * The media section embeds a completeness summary only — the full media

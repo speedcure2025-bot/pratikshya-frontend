@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee management context.
+ * PRATIKSHYA FASHION — Employee management context.
  *
  * Shared employee repository state. Admin account-management actions
  * are thin wrappers around employeeService and carry the signed-in Admin

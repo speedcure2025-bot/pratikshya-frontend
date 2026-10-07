@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin system APIs (roles, permissions, users, audit).
+ * PRATIKSHYA FASHION — Admin system APIs (roles, permissions, users, audit).
  *
  * Backend endpoints (implemented against existing RBAC / audit tables):
  *   GET /roles, GET /roles/{id}

@@ -33,7 +33,7 @@ import { formatEmployeeDateTime } from "../../../utils/employee";
 import { useAdminAuth } from "../../../context/AdminAuthContext";
 
 /**
- * PRATIKSHYA FASHON — Media record.
+ * PRATIKSHYA FASHION — Media record.
  *
  * One piece of media, in full: preview, editable metadata, assignment,
  * status and removal. Everything on this page goes through the media

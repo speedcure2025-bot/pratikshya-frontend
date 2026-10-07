@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Customer Authentication Context
+ * PRATIKSHYA FASHION — Customer Authentication Context
  *
  * Wired to the FastAPI backend (Phase B).
  * All identity operations call /api/v1/auth/customer/* via authApi.js.

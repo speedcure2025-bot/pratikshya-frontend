@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin navigation icons.
+ * PRATIKSHYA FASHION — Admin navigation icons.
  *
  * Lucide only, matching the employee portal's approach: navigation config
  * names an icon, this map resolves it, so config files never import React.

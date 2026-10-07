@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee management service.
+ * PRATIKSHYA FASHION — Employee management service.
  *
  * The seam the future Admin Portal will consume:
  *

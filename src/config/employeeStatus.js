@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee account status.
+ * PRATIKSHYA FASHION — Employee account status.
  *
  * Login is allowed only for statuses marked `canLogin`. Suspended and
  * inactive accounts never enter the portal.

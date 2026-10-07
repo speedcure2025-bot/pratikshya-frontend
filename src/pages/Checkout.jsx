@@ -40,7 +40,7 @@ export default function Checkout() {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "Checkout — PRATIKSHYA FASHON";
+    document.title = "Checkout — PRATIKSHYA FASHION";
     return () => {
       document.title = previousTitle;
     };

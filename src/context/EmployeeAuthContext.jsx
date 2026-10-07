@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee authentication context.
+ * PRATIKSHYA FASHION — Employee authentication context.
  *
  * Wired to the FastAPI backend (Phase B).
  * Calls /api/v1/auth/employee/* via authApi.js.

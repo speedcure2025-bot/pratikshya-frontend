@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin Order Detail
+ * PRATIKSHYA FASHION — Admin Order Detail
  *
  * Order Header, Customer, Items, Pricing, Payment, Inventory, Fulfillment,
  * Shipping, Timeline, Notes.

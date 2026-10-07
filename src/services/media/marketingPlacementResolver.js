@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Marketing placement product resolution.
+ * PRATIKSHYA FASHION — Marketing placement product resolution.
  *
  * The storefront side of a marketing placement. A placement stores product
  * ids only (see `marketingPlacementRepository`); this module resolves those

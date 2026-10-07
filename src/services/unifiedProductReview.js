@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Unified Admin Product Review projection (Phase 3D).
+ * PRATIKSHYA FASHION — Unified Admin Product Review projection (Phase 3D).
  *
  * ONE product lifecycle has ONE Admin review workspace. This module is the
  * read-only projection that turns the canonical catalogue into the unified

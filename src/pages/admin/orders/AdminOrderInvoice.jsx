@@ -134,7 +134,7 @@ export default function AdminOrderInvoice() {
       <div className="mx-auto max-w-3xl border border-mist bg-ivory px-6 py-8 sm:px-10 sm:py-12">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <h2 className="font-display text-2xl font-light tracking-[.08em] text-ink">PRATIKSHYA FASHON</h2>
+            <h2 className="font-display text-2xl font-light tracking-[.08em] text-ink">PRATIKSHYA FASHION</h2>
             <p className="mt-1 font-ui text-[10px] uppercase tracking-[.24em] text-brass">Atelier of Handcrafted Indian Couture</p>
           </div>
           <div className="text-left sm:text-right">
@@ -203,7 +203,7 @@ export default function AdminOrderInvoice() {
         </div>
 
         <Rule width="w-full" tone="accent" className="my-8" />
-        <p className="font-ui text-[10px] uppercase leading-relaxed tracking-[.16em] text-taupe">{invoiceIssued ? "Rendered from the PRATIKSHYA FASHON order record. Not a tax invoice — no tax is charged or recorded on this order." : "No invoice has been issued for this order. This is a summary of the order record, not a tax invoice."}</p>
+        <p className="font-ui text-[10px] uppercase leading-relaxed tracking-[.16em] text-taupe">{invoiceIssued ? "Rendered from the PRATIKSHYA FASHION order record. Not a tax invoice — no tax is charged or recorded on this order." : "No invoice has been issued for this order. This is a summary of the order record, not a tax invoice."}</p>
       </div>
     </AdminPage>
   );

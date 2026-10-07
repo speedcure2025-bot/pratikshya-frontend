@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee presentation helpers.
+ * PRATIKSHYA FASHION — Employee presentation helpers.
  *
  * Pure formatting used by the portal. No storage, no authorization.
  */

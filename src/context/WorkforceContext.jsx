@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Workforce live subscription + server hydration.
+ * PRATIKSHYA FASHION — Workforce live subscription + server hydration.
  *
  * The repositories keep an in-memory session mirror and announce
  * `pratikshya-workforce-changed`; this provider keeps dashboards and desks in

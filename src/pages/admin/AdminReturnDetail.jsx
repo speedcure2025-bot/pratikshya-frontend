@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin Return Detail (Phase 16.1)
+ * PRATIKSHYA FASHION — Admin Return Detail (Phase 16.1)
  *
  * Premium operational return management interface.
  * Shows return details, provides context-sensitive actions based on status,

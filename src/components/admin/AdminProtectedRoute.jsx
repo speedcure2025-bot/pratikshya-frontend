@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin workspace route guard.
+ * PRATIKSHYA FASHION — Admin workspace route guard.
  *
  * Three outcomes, in order:
  *

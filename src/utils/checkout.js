@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Checkout utilities.
+ * PRATIKSHYA FASHION — Checkout utilities.
  *
  * The pure-logic layer of the Phase 8 transaction experience: delivery
  * pricing, checkout totals, delivery estimates, validation composition,

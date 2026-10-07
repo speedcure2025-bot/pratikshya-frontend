@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin category create/edit desk.
+ * PRATIKSHYA FASHION — Admin category create/edit desk.
  *
  * The edit route loads the record from the ADMIN detail endpoint
  * (GET /admin/categories/{id}) through `taxonomyRepository.loadCategory`,

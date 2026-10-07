@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Inventory API
+ * PRATIKSHYA FASHION — Inventory API
  *
  * Contract reserved for the backend inventory modules
  * (backend/app/api/v1/inventory.py, warehouses.py, stock_transfers.py).

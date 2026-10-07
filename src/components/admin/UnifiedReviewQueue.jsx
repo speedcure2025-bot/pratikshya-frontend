@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Unified Review Queue (Phase 3D).
+ * PRATIKSHYA FASHION — Unified Review Queue (Phase 3D).
  *
  * The ONE queue over the ONE product lifecycle. Every product in the
  * canonical register appears here exactly once. Every canonical department

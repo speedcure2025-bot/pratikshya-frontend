@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — canonical media-path helpers (Phase 6).
+ * PRATIKSHYA FASHION — canonical media-path helpers (Phase 6).
  *
  * One rule: the BACKEND decides what a product image reference resolves to.
  * This module never derives a storage path from a slug, an id or a folder

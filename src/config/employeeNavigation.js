@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee navigation & route authorization.
+ * PRATIKSHYA FASHION — Employee navigation & route authorization.
  *
  * Navigation is organised around WORK, grouped into collapsible sections.
  * Items are filtered by the existing permission catalogue (employeePermissions),
@@ -16,7 +16,7 @@
 import { PERMISSIONS as P } from "./employeePermissions";
 
 export const EMPLOYEE_BRAND = {
-  name: "PRATIKSHYA FASHON",
+  name: "PRATIKSHYA FASHION",
   portal: "Employee Portal",
   subtitle: "Retail Operations",
   home: "/employee",

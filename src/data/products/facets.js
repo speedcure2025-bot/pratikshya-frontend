@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Facet construction.
+ * PRATIKSHYA FASHION — Facet construction.
  *
  * Turns the declared facets in `taxonomy.js` into the option lists the filter
  * panel renders, counted against the products actually in scope.

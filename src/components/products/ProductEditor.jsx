@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — The complete product & merchandising workspace.
+ * PRATIKSHYA FASHION — The complete product & merchandising workspace.
  *
  * One editor serves both portals: Admin wields it with publishing rights,
  * employees with `products.manage` use it to draft and submit for review.

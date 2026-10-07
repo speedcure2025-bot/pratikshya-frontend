@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee authorization.
+ * PRATIKSHYA FASHION — Employee authorization.
  *
  * role → permissions → authorization
  *

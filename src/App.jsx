@@ -182,7 +182,7 @@ export default function App() {
                     <AdminAuthProvider>
                       <EmployeeManagementProvider>
                     <WorkforceProvider>
-                    <Suspense fallback={<LoadingState label="Opening PRATIKSHYA FASHON" />}>
+                    <Suspense fallback={<LoadingState label="Opening PRATIKSHYA FASHION" />}>
                     <Routes>
                       {/* Unified staff sign-in — all four account levels. */}
                       <Route path="/login" element={<StaffLogin />} />

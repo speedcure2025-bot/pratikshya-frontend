@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Product & merchandising vocabulary (Phase 13).
+ * PRATIKSHYA FASHION — Product & merchandising vocabulary (Phase 13).
  *
  * The single configuration the product editor, the review queue and the
  * admin tables read their option lists from. Categories and their labels

@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin workspace access model.
+ * PRATIKSHYA FASHION — Admin workspace access model.
  *
  * The Admin Portal is a separate authentication boundary from the customer
  * storefront; the Employee Operations Portal is the staff workspace for

@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin dashboard reads (backend-driven).
+ * PRATIKSHYA FASHION — Admin dashboard reads (backend-driven).
  *
  * The dashboard is fed by ONE consolidated request:
  *

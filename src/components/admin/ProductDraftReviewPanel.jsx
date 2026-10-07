@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Product draft review panel (Phase 22 + 22.1).
+ * PRATIKSHYA FASHION — Product draft review panel (Phase 22 + 22.1).
  *
  * The admin side of one DRAFT: the complete group preview (ProductPreview),
  * the canonical read-only Product ID, commercial fields (name, category,

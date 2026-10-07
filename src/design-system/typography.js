@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Atelier Typography
+ * PRATIKSHYA FASHION — Atelier Typography
  *
  * Two typefaces carry the whole brand:
  *   display — Cormorant Garamond, used for every headline and product name.

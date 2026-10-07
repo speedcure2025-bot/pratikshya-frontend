@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Canonical order read model (Phase 3).
+ * PRATIKSHYA FASHION — Canonical order read model (Phase 3).
  *
  * One place that turns a backend order response into the shape the UI
  * consumes, and one place that derives every order-state question the UI

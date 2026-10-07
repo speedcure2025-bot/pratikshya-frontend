@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin workspace session context.
+ * PRATIKSHYA FASHION — Admin workspace session context.
  *
  * UNIFIED AUTHENTICATION (2026-09): all four staff account levels sign in
  * through the ONE /login page → POST /auth/staff/sign-in. This context owns

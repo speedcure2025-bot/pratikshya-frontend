@@ -22,7 +22,7 @@ import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 /**
  * Customer Sign Up — /signup
  *
- * Join the PRATIKSHYA FASHON atelier.
+ * Join the PRATIKSHYA FASHION atelier.
  * Clean, editorial form with inline feedback, password visibility toggles,
  * and immediate session establishment.
  */
@@ -54,7 +54,7 @@ export default function SignUp() {
 
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = "Create Account — PRATIKSHYA FASHON";
+    document.title = "Create Account — PRATIKSHYA FASHION";
     return () => {
       document.title = prevTitle;
     };
@@ -187,7 +187,7 @@ export default function SignUp() {
                 className="mt-6 flex items-center gap-3 border border-cocoa/40 bg-cocoa/10 p-4 text-cocoa"
               >
                 <CheckCircle2 size={16} className="shrink-0" aria-hidden="true" />
-                <p className="font-ui text-xs">Account created successfully. Welcome to PRATIKSHYA FASHON.</p>
+                <p className="font-ui text-xs">Account created successfully. Welcome to PRATIKSHYA FASHION.</p>
               </div>
             )}
 
@@ -420,7 +420,7 @@ export default function SignUp() {
 
               {/* Terms notice */}
               <p className="font-ui text-[11px] leading-relaxed text-taupe">
-                By creating an account, you agree to PRATIKSHYA FASHON&apos;s{" "}
+                By creating an account, you agree to PRATIKSHYA FASHION&apos;s{" "}
                 <Link to="/terms" className="text-ink underline hover:text-accent">
                   Terms of Service
                 </Link>{" "}
@@ -443,7 +443,7 @@ export default function SignUp() {
                   {isSubmitting ? (
                     "Creating Account..."
                   ) : success ? (
-                    "Welcome to PRATIKSHYA FASHON"
+                    "Welcome to PRATIKSHYA FASHION"
                   ) : (
                     <>
                       Create Account <ArrowRight size={14} aria-hidden="true" />

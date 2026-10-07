@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Homepage hero (backend-driven).
+ * PRATIKSHYA FASHION — Homepage hero (backend-driven).
  *
  * Hero slides come from GET /home (assembled by the backend from managed
  * marketing placements). There is no static slide registry: if the backend

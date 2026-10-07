@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin Offers desk (Phase 5)
+ * PRATIKSHYA FASHION — Admin Offers desk (Phase 5)
  *
  * Fully server-backed: the register list, its search (`q`), the derived
  * status filter and pagination all run on `GET /admin/offers`; the metric

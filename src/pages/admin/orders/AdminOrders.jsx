@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin Orders Management (Phase 15)
+ * PRATIKSHYA FASHION — Admin Orders Management (Phase 15)
  *
  * Premium operational dashboard for order lifecycle:
  * metrics, search, filters, table (desktop) / cards (mobile).

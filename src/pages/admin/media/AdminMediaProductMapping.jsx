@@ -10,7 +10,7 @@
  */
 
 /**
- * PRATIKSHYA FASHON — Admin media product mapping workspace (Phase 21.6).
+ * PRATIKSHYA FASHION — Admin media product mapping workspace (Phase 21.6).
  *
  * Atelier admin design system.
  * Displays deterministic media groups built from new filename convention,

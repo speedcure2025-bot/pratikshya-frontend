@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Order state (Phase B wired)
+ * PRATIKSHYA FASHION — Order state (Phase B wired)
  *
  * When authenticated:
  *   - POST   /orders               — createOrder / placeOrder

@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Backend-fed catalog store.
+ * PRATIKSHYA FASHION — Backend-fed catalog store.
  *
  * The single runtime source for storefront product, category and collection
  * data. It is hydrated once from the FastAPI backend:

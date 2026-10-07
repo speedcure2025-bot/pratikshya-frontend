@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — unified account model (frontend mirror).
+ * PRATIKSHYA FASHION — unified account model (frontend mirror).
  *
  * ONE shared constants module for the three account levels, the account
  * creation matrix and the consolidated capability groups. The backend

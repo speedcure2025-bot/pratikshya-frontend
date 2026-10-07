@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Pratikshya Fashon Backend",
-    "description": "PRATIKSHYA FASHON \u2014 Feature-Based Backend API for Customer, Employee, and Admin surfaces.",
+    "title": "Pratikshya Fashion Backend",
+    "description": "PRATIKSHYA FASHION \u2014 Feature-Based Backend API for Customer, Employee, and Admin surfaces.",
     "version": "1.0.0"
   },
   "paths": {
@@ -14968,7 +14968,7 @@
           "brand": {
             "type": "string",
             "title": "Brand",
-            "default": "Pratikshya Fashon"
+            "default": "Pratikshya Fashion"
           },
           "productType": {
             "type": "string",
@@ -18778,7 +18778,7 @@
           "brand": {
             "type": "string",
             "title": "Brand",
-            "default": "Pratikshya Fashon"
+            "default": "Pratikshya Fashion"
           },
           "productType": {
             "type": "string",
@@ -26791,7 +26791,7 @@
           "brand": {
             "type": "string",
             "title": "Brand",
-            "default": "Pratikshya Fashon"
+            "default": "Pratikshya Fashion"
           },
           "productType": {
             "type": "string",

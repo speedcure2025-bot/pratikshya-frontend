@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Order configuration (Phase 15)
+ * PRATIKSHYA FASHION — Order configuration (Phase 15)
  *
  * The single home for every order-level definition:
  * order statuses, payment statuses, fulfillment statuses, transitions,

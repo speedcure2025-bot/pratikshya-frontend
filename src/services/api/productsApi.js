@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Products API
+ * PRATIKSHYA FASHION — Products API
  *
  * Maps to API_CONTRACT.md § PRODUCTS
  *

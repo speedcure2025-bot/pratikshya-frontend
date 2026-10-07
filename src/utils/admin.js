@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin presentation helpers.
+ * PRATIKSHYA FASHION — Admin presentation helpers.
  *
  * Pure formatting for the Admin Portal. No storage, no authorization.
  * Currency goes through `formatINR` so the whole product prints rupees the

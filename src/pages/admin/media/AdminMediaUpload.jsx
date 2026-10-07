@@ -13,7 +13,7 @@ export default function AdminMediaUpload() {
     <AdminPage
       eyebrow="Business / Media"
       title="Upload Media"
-      description="Upload and register new image and video assets for products or marketing placements across PRATIKSHYA FASHON."
+      description="Upload and register new image and video assets for products or marketing placements across PRATIKSHYA FASHION."
       actions={
         <AtelierButton as={Link} to={`${prefix}/media`} size="chip" variant="outline">
           <ArrowLeft size={13} className="mr-1 inline-block" />

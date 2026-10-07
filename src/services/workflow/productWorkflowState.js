@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Canonical workflow projection (Phase 2, Step A).
+ * PRATIKSHYA FASHION — Canonical workflow projection (Phase 2, Step A).
  *
  * The repository still persists the compatibility fields:
  *

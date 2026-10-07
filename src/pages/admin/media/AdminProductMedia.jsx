@@ -14,7 +14,7 @@ import ProductLifecycleActions from "../../../components/admin/ProductLifecycleA
 import { useEffect } from "react";
 
 /**
- * PRATIKSHYA FASHON — Product media manager (Phase 7, server-backed).
+ * PRATIKSHYA FASHION — Product media manager (Phase 7, server-backed).
  *
  * ONE product's media, exactly as the SERVER knows it:
  *

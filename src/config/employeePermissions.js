@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee permission catalogue.
+ * PRATIKSHYA FASHION — Employee permission catalogue.
  *
  * The single source of truth for every authorization key the employee
  * portal understands. Pages and navigation never invent permission

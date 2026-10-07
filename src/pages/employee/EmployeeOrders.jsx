@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Employee Order Desk (Phase 15)
+ * PRATIKSHYA FASHION — Employee Order Desk (Phase 15)
  *
  * Role-aware operational workspace.
  * Warehouse sees warehouse orders, Store Manager sees store + warehouse,

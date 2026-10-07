@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Payments API
+ * PRATIKSHYA FASHION — Payments API
  * Maps to API_CONTRACT.md § PAYMENTS + Razorpay integration
  *
  * POST /payments/session        — create Razorpay order against a pending order

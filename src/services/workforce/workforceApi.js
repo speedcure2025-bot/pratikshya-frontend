@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Workforce API client.
+ * PRATIKSHYA FASHION — Workforce API client.
  *
  * Thin async wrappers over the workforce backend (attendance punches, leave,
  * performance). The session mirror (`../workforce/store.js`) is populated by

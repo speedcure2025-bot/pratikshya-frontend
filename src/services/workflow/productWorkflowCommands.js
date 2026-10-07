@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Universal authorized lifecycle commands (Phase 2, Step D).
+ * PRATIKSHYA FASHION — Universal authorized lifecycle commands (Phase 2, Step D).
  *
  * THE ONE authoritative product workflow command layer. Every transition —
  * create, assign, employee save, submit, admin review, return, approve,

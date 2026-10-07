@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Media hooks.
+ * PRATIKSHYA FASHION — Media hooks.
  *
  * Small subscriptions over `mediaRepository`. Every surface that shows media
  * reads through one of these, so a change made in the Admin Portal reaches

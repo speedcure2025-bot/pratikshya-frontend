@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin Portal navigation.
+ * PRATIKSHYA FASHION — Admin Portal navigation.
  *
  * One catalogue of business modules grouped the way the house is run. All
  * modules listed here are implemented and routed (see App.jsx). The tree is
@@ -25,7 +25,7 @@
  */
 
 export const ADMIN_BRAND = {
-  name: "PRATIKSHYA FASHON",
+  name: "PRATIKSHYA FASHION",
   portal: "Admin Portal",
   subtitle: "Business Management & Operations",
   home: "/admin",

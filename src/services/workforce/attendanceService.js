@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Attendance service.
+ * PRATIKSHYA FASHION — Attendance service.
  *
  * Check-in, check-out, corrections, summaries and reports. Working hours
  * and status rules live here so UI never recomputes them.

@@ -10,7 +10,7 @@ import { useEmployeeAuth } from "../../context/EmployeeAuthContext";
 import { apiSignInStaff } from "../../services/api/authApi";
 
 /**
- * PRATIKSHYA FASHON — the ONE canonical staff sign-in page.
+ * PRATIKSHYA FASHION — the ONE canonical staff sign-in page.
  *
  * Serves all four account levels: SUPER_ADMIN · ADMIN · SUPER_EMPLOYEE ·
  * EMPLOYEE. The backend authenticates the credential (email, phone or PF
@@ -34,7 +34,7 @@ export default function StaffLogin() {
 
   useEffect(() => {
     const previous = document.title;
-    document.title = "Sign In — PRATIKSHYA FASHON";
+    document.title = "Sign In — PRATIKSHYA FASHION";
     return () => {
       document.title = previous;
     };
@@ -108,7 +108,7 @@ export default function StaffLogin() {
           size="default"
           variant="lockup"
           theme="dark"
-          wordmark="PRATIKSHYA FASHON"
+          wordmark="PRATIKSHYA FASHION"
           subtitle="Staff Sign In · Admin & Team Portal"
         />
       </header>
@@ -156,7 +156,7 @@ export default function StaffLogin() {
                 autoComplete="username"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="you@pratikshyafashon.in · PF-SLS-00124"
+                placeholder="you@pratikshyafashion.in · PF-SLS-00124"
                 className="w-full border border-pearl bg-canvas px-4 py-3.5 font-ui text-sm text-ink placeholder:text-taupe/60 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
               />
             </div>
@@ -227,7 +227,7 @@ export default function StaffLogin() {
               Customer sign in
             </Link>
             <a
-              href="mailto:operations@pratikshyafashon.in"
+              href="mailto:operations@pratikshyafashion.in"
               className="font-ui text-[11px] text-taupe underline-offset-4 hover:text-accent hover:underline"
             >
               Contact administrator

@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Taxonomy repository (backend-driven).
+ * PRATIKSHYA FASHION — Taxonomy repository (backend-driven).
  *
  * Categories, subcategories and collections are backend-owned
  * (GET /categories, GET /collections and the /admin/* mutation endpoints).

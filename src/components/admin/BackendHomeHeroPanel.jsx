@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Backend-managed HOME_HERO admin panel (B-02)
+ * PRATIKSHYA FASHION — Backend-managed HOME_HERO admin panel (B-02)
  *
  * This panel talks to the real backend API:
  *   GET    /admin/marketing/media?placement=HOME_HERO

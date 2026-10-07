@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — API services barrel export
+ * PRATIKSHYA FASHION — API services barrel export
  *
  * Import any API function from this single entry point:
  *   import { apiListProducts, apiGetCart, apiPlaceOrder } from "../services/api"

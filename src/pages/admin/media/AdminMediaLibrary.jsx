@@ -306,7 +306,7 @@ export default function AdminMediaLibrary() {
     <AdminPage
       eyebrow="Business / Media"
       title="Media Management"
-      description="Manage product and marketing media across PRATIKSHYA FASHON."
+      description="Manage product and marketing media across PRATIKSHYA FASHION."
       actions={
         <div className="flex flex-wrap items-center gap-2.5">
           {metrics.pendingReview > 0 ? (

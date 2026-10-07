@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Product editor sections: Basic Information and
+ * PRATIKSHYA FASHION — Product editor sections: Basic Information and
  * Category & Attributes (Phase 13).
  *
  * Basics holds identity + taxonomy only. Story copy lives in Product Content;

@@ -1,5 +1,5 @@
 /**
- * PRATIKSHYA FASHON — Admin product service (Phase 5).
+ * PRATIKSHYA FASHION — Admin product service (Phase 5).
  *
  * THE awaited backend layer behind every admin product screen. Every call:
  *   1. goes through the single normalized API layer (services/api/productsApi

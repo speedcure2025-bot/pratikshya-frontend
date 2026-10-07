@@ -13,7 +13,7 @@ export const emptyDraft = () => ({
   department: "",
   name: "",
   sku: "",
-  brand: "Pratikshya Fashon",
+  brand: "Pratikshya Fashion",
   productType: "fashion",
   productCode: "",
   barcode: "",

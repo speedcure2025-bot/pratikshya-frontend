@@ -42,7 +42,7 @@ const resolveGroomHref = () =>
 const lookKey = (look, fallback) =>
   look?.mediaId || look?.productId || look?.filename || fallback;
 
-const lookAlt = (look, label) => look?.image?.alt || `${label} wedding wear at PRATIKSHYA FASHON`;
+const lookAlt = (look, label) => look?.image?.alt || `${label} wedding wear at PRATIKSHYA FASHION`;
 
 const wrap = (value, count) => ((value % count) + count) % count;
 
