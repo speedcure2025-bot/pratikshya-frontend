@@ -28,6 +28,13 @@ import { COMMERCE_DEFAULTS } from "./commerceDefaults";
  */
 export const DELIVERY_METHODS = [
   {
+    id: "normal",
+    label: "Normal Delivery",
+    caption: "5–7 business days",
+    fee: 0,
+    freeAtThreshold: false,  // always free regardless of order value
+  },
+  {
     id: "standard",
     label: "Standard Delivery",
     caption: "3–5 business days",

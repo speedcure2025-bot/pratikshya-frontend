@@ -131,8 +131,10 @@ export const resolveMediaUrl = (value) => {
   if (!text) return "";
   if (isRemoteOrInlineUrl(text)) return text;
   if (isBackendMediaUrl(text)) return `${mediaOrigin()}${text}`;
-  // Legacy public asset, media-register id, or anything else: unchanged.
-  // Nothing is invented, and no product ever borrows another product's art.
+  if (isLegacyPublicImageUrl(text)) return text;
+  if (/^(hero|products|marketing|collections|categories)\//i.test(text)) {
+    return mediaObjectUrl(text);
+  }
   return text;
 };
 

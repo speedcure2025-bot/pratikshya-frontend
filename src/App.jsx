@@ -57,6 +57,7 @@ const AccountSecurity = lazy(() => import("./pages/account/AccountSecurity"));
 const AccountPreferences = lazy(() => import("./pages/account/AccountPreferences"));
 const AiMirror = lazy(() => import("./pages/account/AiMirror"));
 const AiShoppingAssistant = lazy(() => import("./pages/account/AiShoppingAssistant"));
+const InstagramRewards = lazy(() => import("./pages/account/InstagramRewards"));
 
 const EmployeeLogin = lazy(() => import("./pages/employee/EmployeeLogin"));
 const EmployeeForgotPassword = lazy(() => import("./pages/employee/EmployeeForgotPassword"));
@@ -110,6 +111,7 @@ const AdminReturnDetail = lazy(() => import("./pages/admin/AdminReturnDetail"));
 const AdminOffers = lazy(() => import("./pages/admin/offers/AdminOffers"));
 const AdminOfferFormPage = lazy(() => import("./pages/admin/offers/AdminOfferFormPage"));
 const AdminOfferDetail = lazy(() => import("./pages/admin/offers/AdminOfferDetail"));
+const AdminInstagramRewards = lazy(() => import("./pages/admin/offers/AdminInstagramRewards"));
 const AdminCategories = lazy(() => import("./pages/admin/taxonomy/AdminCategories"));
 const AdminCategoryForm = lazy(() => import("./pages/admin/taxonomy/AdminCategoryForm"));
 const AdminCategoryDetail = lazy(() => import("./pages/admin/taxonomy/AdminCategoryDetail"));
@@ -144,6 +146,7 @@ const dedicatedPaths = new Set([
   "/account/preferences",
   "/account/ai-mirror",
   "/account/ai-shopping",
+  "/account/instagram-rewards",
   "/account/wishlist",
   "/signin",
   "/signup",
@@ -238,6 +241,7 @@ export default function App() {
                           <Route path="/admin/offers/new" element={<AdminOfferFormPage />} />
                           <Route path="/admin/offers/:offerId/edit" element={<AdminOfferFormPage />} />
                           <Route path="/admin/offers/:offerId" element={<AdminOfferDetail />} />
+                          <Route path="/admin/instagram-rewards" element={<AdminInstagramRewards />} />
                           {/* Phase 15 — Orders become operational */}
                           <Route path="/admin/orders" element={<AdminOrders />} />
                           <Route path="/admin/orders/:orderId" element={<AdminOrderDetail />} />
@@ -321,6 +325,7 @@ export default function App() {
                           <Route path="/super-admin/offers/new" element={<AdminOfferFormPage />} />
                           <Route path="/super-admin/offers/:offerId/edit" element={<AdminOfferFormPage />} />
                           <Route path="/super-admin/offers/:offerId" element={<AdminOfferDetail />} />
+                          <Route path="/super-admin/instagram-rewards" element={<AdminInstagramRewards />} />
 
                           <Route path="/super-admin/orders" element={<AdminOrders />} />
                           <Route path="/super-admin/orders/:orderId" element={<AdminOrderDetail />} />
@@ -433,8 +438,10 @@ export default function App() {
                         <Route path="/product/:productId" element={<ProductDetail />} />
 
                         <Route path="/cart" element={<Cart />} />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/order-success" element={<OrderSuccess />} />
+                        <Route element={<ProtectedRoute />}>
+                          <Route path="/checkout" element={<Checkout />} />
+                          <Route path="/order-success" element={<OrderSuccess />} />
+                        </Route>
                         <Route path="/account/wishlist" element={<Wishlist />} />
                         <Route path="/wishlist" element={<Navigate to="/account/wishlist" replace />} />
 
@@ -457,6 +464,7 @@ export default function App() {
                           <Route path="/account/preferences" element={<AccountPreferences />} />
                           <Route path="/account/ai-mirror" element={<AiMirror />} />
                           <Route path="/account/ai-shopping" element={<AiShoppingAssistant />} />
+                          <Route path="/account/instagram-rewards" element={<InstagramRewards />} />
                         </Route>
 
                         {routeManifest

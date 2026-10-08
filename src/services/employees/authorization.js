@@ -40,10 +40,9 @@ export const hasPermission = (employee, permission) => {
   }
 
   if (holdsCapability(granted, permission)) return true;
-  /* offers.manage is the house-wide offer desk and implies every offer key. */
+  /* offers.manage is the house-wide offer desk and implies every offer key & instagram reward key. */
   if (
-    String(permission).startsWith("offers.") &&
-    permission !== PERMISSIONS.OFFERS_MANAGE &&
+    (String(permission).startsWith("offers.") || String(permission).startswith?.("instagram_reward.") || String(permission).startsWith("instagram_reward.")) &&
     holdsCapability(granted, PERMISSIONS.OFFERS_MANAGE)
   ) {
     return true;

@@ -21,6 +21,7 @@ export * from "./employeesApi";
 export * from "./wishlistApi";
 export * from "./paymentsApi";
 export * from "./offersApi";
+export * from "./instagramRewardsApi";
 export * from "./mediaApi";
 export * from "./inventoryApi";
 export * from "./adminApi";

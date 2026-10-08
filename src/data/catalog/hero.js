@@ -7,13 +7,14 @@
  */
 
 import { getHome } from "../../services/catalog/catalogStore";
+import { resolveMediaUrl } from "../../services/media/mediaPaths";
 
 const readSlides = () => {
   const home = getHome();
   const slides = home?.heroSlides ?? home?.hero_slides ?? [];
   return (Array.isArray(slides) ? slides : []).map((slide) => ({
     id: slide.id,
-    image: slide.image ?? slide.mobileImage ?? "",
+    image: resolveMediaUrl(slide.image ?? slide.mobileImage ?? ""),
     eyebrow: slide.eyebrow ?? "",
     title: slide.title ?? "",
     body: slide.subtitle ?? "",

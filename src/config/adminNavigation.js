@@ -71,6 +71,7 @@ export const ADMIN_NAV_GROUPS = [
       { id: "categories", label: "Categories", to: "/admin/categories", icon: "tags", permission: "catalogue.view" },
       { id: "collections", label: "Collections", to: "/admin/collections", icon: "layers", permission: "catalogue.view" },
       { id: "offers", label: "Offers", to: "/admin/offers", icon: "tag", permission: "offers.view" },
+      { id: "instagram-rewards", label: "Loyalty Rewards", to: "/admin/instagram-rewards", icon: "camera", permission: "instagram_reward.manage" },
       {
         id: "media",
         label: "Media",

@@ -23,7 +23,7 @@ import {
   resolveHeroSlideImage,
   resolveHomepageHeroMedia,
 } from "../../services/media/mediaResolver";
-import { mediaObjectUrl } from "../../services/media/mediaPaths";
+import { mediaObjectUrl, resolveMediaUrl } from "../../services/media/mediaPaths";
 import { AtelierButton, header as headerSpacing } from "../../design-system";
 import { cn } from "../../utils/cn";
 

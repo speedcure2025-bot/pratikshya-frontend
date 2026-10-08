@@ -41,6 +41,7 @@ import {
   UsersRound,
   Video,
   Warehouse,
+  Camera,
   ChevronDown,
   ChevronRight,
   Box,
@@ -48,6 +49,7 @@ import {
 
 export const ADMIN_NAV_ICONS = {
   layout: LayoutDashboard,
+  camera: Camera,
   check: ClipboardCheck,
   sparkles: Sparkles,
   grid: LayoutGrid,

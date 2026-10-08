@@ -124,7 +124,7 @@ const freshState = ({ user, addresses = [] }) => {
     address: user && preferred ? preferred : null,
     addressId: user && preferred ? preferred.id : null,
     addressSource: user && preferred ? "account" : "guest",
-    deliveryMethod: "standard",
+    deliveryMethod: "normal",
     paymentMethod: null,
     stepIndex: 0,
     bagFingerprint: null,
@@ -611,6 +611,9 @@ export function CheckoutProvider({ children }) {
             };
             await cartRef.current.clearCart();
             clearPersistedCheckout();
+            // Refresh the order in OrderContext so the success page shows
+            // the correct payment_status (PAID) and actual payment method.
+            orderApi.getOrderById(pendingOrder.id).catch(() => {});
             setState((s) => ({
               ...s,
               paymentStatus: PAYMENT_STATUS.SUCCESS,

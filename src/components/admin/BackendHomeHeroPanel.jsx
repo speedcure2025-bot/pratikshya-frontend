@@ -26,7 +26,7 @@ import {
   apiReorderMarketingMedia,
 } from "../../services/api/marketingMediaApi";
 import { apiUploadMediaObject } from "../../services/api/mediaApi";
-import { mediaObjectUrl } from "../../services/media/mediaPaths";
+import { mediaObjectUrl, resolveMediaUrl } from "../../services/media/mediaPaths";
 import { hydrateCatalog } from "../../services/catalog/catalogStore";
 
 const CANONICAL_HERO_OPTIONS = [
@@ -267,9 +267,9 @@ export default function BackendHomeHeroPanel() {
 
   const currentPreviewUrl =
     sourceMode === "device"
-      ? previewUrl || (form.objectKey ? mediaObjectUrl(form.objectKey) : null)
+      ? previewUrl || (form.objectKey ? resolveMediaUrl(form.objectKey) : null)
       : form.objectKey
-      ? mediaObjectUrl(form.objectKey)
+      ? resolveMediaUrl(form.objectKey)
       : null;
 
   return (
@@ -316,7 +316,7 @@ export default function BackendHomeHeroPanel() {
           {items.length ? (
             <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {items.map((item, index) => {
-                const url = item.url || mediaObjectUrl(item.objectKey || item.object_key);
+                const url = resolveMediaUrl(item.url || item.objectKey || item.object_key);
                 const first = index === 0;
                 const last = index === items.length - 1;
                 return (

@@ -41,6 +41,7 @@ export const calculateDeliveryFee = (methodId, payableSubtotal) => {
   if (payableSubtotal <= 0) return 0;
   const shipping = readShippingRules();
   if (shipping.enabled === false) return 0;
+  if (method.id === "normal") return 0;
   if (method.freeAtThreshold && payableSubtotal >= shipping.freeShippingThreshold) return 0;
   if (method.freeAtThreshold) return shipping.defaultShippingFee;
   if (method.id === "express") return shipping.expressDeliveryFee;

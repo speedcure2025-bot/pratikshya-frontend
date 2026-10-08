@@ -135,6 +135,7 @@ export const CAPABILITY_GROUPS = Object.freeze([
   { id: "OFFERS", label: "Offers", actions: [
     { code: "offers.view", label: "View" },
     { code: "offers.manage", label: "Manage" },
+    { code: "instagram_reward.manage", label: "Manage Loyalty Rewards" },
   ] },
   { id: "SETTINGS", label: "Settings", actions: [
     { code: "settings.view", label: "View" },
@@ -173,7 +174,8 @@ export const CAPABILITY_IMPLIES = Object.freeze({
   "marketing.manage": [],
   "analytics.view": ["analytics.view", "analytics.sales", "analytics.products", "analytics.customers", "analytics.inventory", "analytics.returns", "analytics.offers", "analytics.employees", "audit.view"],
   "offers.view": ["offers.view"],
-  "offers.manage": ["offers.create", "offers.edit", "offers.activate", "offers.pause", "offers.archive", "offers.manage"],
+  "offers.manage": ["offers.create", "offers.edit", "offers.activate", "offers.pause", "offers.archive", "offers.manage", "instagram_reward.manage"],
+  "instagram_reward.manage": ["instagram_reward.manage"],
   "settings.view": ["settings.view"],
   "settings.manage": ["settings.manage"],
   "ai.view": ["analytics.view"],

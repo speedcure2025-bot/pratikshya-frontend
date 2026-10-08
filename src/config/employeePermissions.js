@@ -62,6 +62,8 @@ export const PERMISSIONS = {
   OFFERS_ARCHIVE: "offers.archive",
   OFFERS_MANAGE: "offers.manage",
 
+  INSTAGRAM_REWARD_MANAGE: "instagram_reward.manage",
+
   MEDIA_VIEW: "media.view",
   MEDIA_UPLOAD: "media.upload",
   MEDIA_EDIT: "media.edit",
@@ -187,6 +189,7 @@ export const PERMISSION_CATALOGUE = [
       { key: PERMISSIONS.OFFERS_PAUSE, label: "Pause offers" },
       { key: PERMISSIONS.OFFERS_ARCHIVE, label: "Archive offers" },
       { key: PERMISSIONS.OFFERS_MANAGE, label: "Manage offers" },
+      { key: PERMISSIONS.INSTAGRAM_REWARD_MANAGE, label: "Manage loyalty rewards" },
     ],
   },
   {
