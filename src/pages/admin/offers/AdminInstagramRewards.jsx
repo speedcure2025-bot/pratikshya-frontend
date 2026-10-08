@@ -248,7 +248,7 @@ export default function AdminInstagramRewards() {
         <div className="flex gap-2">
           <AtelierButton
             size="chip"
-            variant="solid"
+            variant="primary"
             onClick={() => setIsManualClaimOpen(true)}
           >
             <UserPlus className="w-3.5 h-3.5 mr-1.5" />
@@ -274,38 +274,40 @@ export default function AdminInstagramRewards() {
       <AdminPanel title="Rewards Directory">
         <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-stretch">
           {/* Status Tabs */}
-          <div className="flex bg-ivory border border-pearl p-1 rounded-sm text-xs font-medium">
+          <div className="flex flex-wrap gap-1.5 border-b border-mist pb-4">
             {["ALL", "PENDING", "APPROVED", "REJECTED"].map((st) => (
               <button
                 key={st}
+                type="button"
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-xs transition-all ${
+                aria-pressed={statusFilter === st}
+                className={`px-3 py-1.5 font-ui text-[10px] uppercase tracking-[.14em] transition-colors ${
                   statusFilter === st
-                    ? "bg-charcoal text-ivory shadow-xs"
-                    : "text-slate hover:text-charcoal"
+                    ? "bg-ink text-ivory"
+                    : "text-taupe hover:bg-mist/60 hover:text-ink"
                 }`}
               >
-                {st === "ALL" ? "All Statuses" : st}
+                {st === "ALL" ? "All" : st}
               </button>
             ))}
           </div>
 
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search handle (@username), order ID, or customer..."
-              className="w-full pl-9 pr-4 py-2 border border-pearl bg-ivory text-sm focus:outline-none focus:border-charcoal"
+              className="w-full pl-9 pr-4 py-2 border border-mist bg-canvas font-ui text-xs text-ink placeholder:text-taupe focus:outline-none focus:border-accent"
             />
           </div>
         </div>
 
         {/* Loading / Error / Empty States */}
         {isLoading ? (
-          <div className="py-12 text-center text-sm text-slate animate-pulse">
+          <div className="py-12 text-center font-ui text-xs text-taupe animate-pulse">
             Loading loyalty rewards...
           </div>
         ) : error ? (
@@ -324,7 +326,7 @@ export default function AdminInstagramRewards() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-pearl text-[11px] uppercase tracking-wider text-slate bg-ivory/50">
+                <tr className="border-b border-mist font-ui text-[10px] uppercase tracking-[.16em] text-taupe bg-surface/40">
                   <th className="py-3 px-4">Customer</th>
                   <th className="py-3 px-4">Customer ID</th>
                   <th className="py-3 px-4">Handle / Identifier</th>
@@ -337,21 +339,21 @@ export default function AdminInstagramRewards() {
               </thead>
               <tbody className="divide-y divide-pearl/60">
                 {rewards.map((reward) => (
-                  <tr key={reward.id} className="hover:bg-ivory/30 transition-colors">
+                  <tr key={reward.id} className="hover:bg-surface/40 transition-colors">
                     {/* Customer */}
-                    <td className="py-4 px-4 font-medium text-charcoal">
+                    <td className="py-4 px-4 font-ui text-xs font-medium text-ink">
                       <div>{reward.customerName}</div>
-                      <div className="text-xs text-slate">{reward.customerEmail}</div>
+                      <div className="text-[10px] text-taupe">{reward.customerEmail}</div>
                     </td>
 
                     {/* Customer ID */}
-                    <td className="py-4 px-4 font-mono text-xs text-slate">
+                    <td className="py-4 px-4 font-mono text-xs text-taupe">
                       {reward.customerId ? reward.customerId.slice(0, 8) + "..." : "N/A"}
                     </td>
 
                     {/* Instagram Username */}
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-1.5 font-medium text-charcoal">
+                      <div className="flex items-center gap-1.5 font-ui text-xs font-medium text-ink">
                         <Camera className="w-3.5 h-3.5 text-rose-500" />
                         <span>@{reward.instagramUsername}</span>
                       </div>
@@ -371,14 +373,14 @@ export default function AdminInstagramRewards() {
                     <td className="py-4 px-4">
                       <Link
                         to={`/admin/orders/${reward.orderId}`}
-                        className="font-mono text-xs text-charcoal hover:underline"
+                        className="font-mono text-xs text-ink hover:underline"
                       >
                         #{reward.orderNumber}
                       </Link>
                     </td>
 
                     {/* Submitted Date */}
-                    <td className="py-4 px-4 text-xs text-slate">
+                    <td className="py-4 px-4 font-ui text-xs text-taupe">
                       {formatDate(reward.createdAt)}
                     </td>
 
@@ -402,7 +404,7 @@ export default function AdminInstagramRewards() {
                           {reward.couponCode}
                         </span>
                       ) : (
-                        <span className="text-slate text-xs">—</span>
+                        <span className="text-taupe text-xs">—</span>
                       )}
                     </td>
 
@@ -411,7 +413,7 @@ export default function AdminInstagramRewards() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleOpenDetail(reward)}
-                          className="p-1.5 text-slate hover:text-charcoal hover:bg-ivory rounded"
+                          className="p-1.5 text-taupe hover:text-ink transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -421,7 +423,7 @@ export default function AdminInstagramRewards() {
                           <>
                             <AtelierButton
                               size="chip"
-                              variant="solid"
+                              variant="primary"
                               onClick={() => handleOpenApproveModal(reward)}
                             >
                               Approve
@@ -457,23 +459,23 @@ export default function AdminInstagramRewards() {
 
       {/* 3. Detail Drawer / Modal */}
       {isDetailOpen && selectedReward && (
-        <div className="fixed inset-0 z-50 bg-charcoal/50 backdrop-blur-xs flex justify-end">
-          <div className="w-full max-w-lg bg-ivory h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between">
+        <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex justify-end">
+          <div className="w-full max-w-lg bg-canvas h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between">
             <div>
-              <div className="flex justify-between items-center border-b border-pearl pb-4 mb-6">
-                <h3 className="font-editorial text-xl text-charcoal">Reward Detail</h3>
+              <div className="flex justify-between items-center border-b border-mist pb-4 mb-6">
+                <h3 className="font-display text-xl font-light text-ink">Reward Detail</h3>
                 <button
                   onClick={() => setIsDetailOpen(false)}
-                  className="text-slate hover:text-charcoal p-1"
+                  className="text-taupe hover:text-ink p-1"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="space-y-6 text-sm">
+              <div className="space-y-6 font-ui text-xs">
                 {/* Status Header */}
-                <div className="flex justify-between items-center p-3 bg-white border border-pearl rounded">
-                  <span className="text-xs uppercase tracking-wider text-slate">Current Status</span>
+                <div className="flex justify-between items-center p-3 bg-surface border border-mist">
+                  <span className="text-[10px] uppercase tracking-[.16em] text-taupe">Current Status</span>
                   {selectedReward.status === "APPROVED" && (
                     <AtelierBadge variant="success">Approved</AtelierBadge>
                   )}
@@ -487,61 +489,61 @@ export default function AdminInstagramRewards() {
 
                 {/* Customer Info */}
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-slate font-semibold mb-2">
+                  <h4 className="font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-2">
                     Customer Information
                   </h4>
-                  <div className="bg-white p-3 border border-pearl rounded space-y-1">
+                  <div className="bg-surface p-3 border border-mist space-y-1">
                     <div>
-                      <span className="font-medium text-charcoal">{selectedReward.customerName}</span>
+                      <span className="font-medium text-ink">{selectedReward.customerName}</span>
                     </div>
-                    <div className="text-xs text-slate">{selectedReward.customerEmail}</div>
-                    <div className="text-xs font-mono text-slate">ID: {selectedReward.customerId}</div>
+                    <div className="text-[10px] text-taupe">{selectedReward.customerEmail}</div>
+                    <div className="text-[10px] font-mono text-taupe">ID: {selectedReward.customerId}</div>
                   </div>
                 </div>
 
                 {/* Instagram Submission Info */}
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-slate font-semibold mb-2">
+                  <h4 className="font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-2">
                     Loyalty Submission Info
                   </h4>
-                  <div className="bg-white p-3 border border-pearl rounded space-y-2">
+                  <div className="bg-surface p-3 border border-mist space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-slate">Handle:</span>
-                      <span className="font-medium">@{selectedReward.instagramUsername}</span>
+                      <span className="text-taupe">Handle:</span>
+                      <span className="font-medium text-ink">@{selectedReward.instagramUsername}</span>
                     </div>
                     {selectedReward.instagramPostUrl && (
                       <div className="flex justify-between items-center">
-                        <span className="text-slate">Post Link:</span>
+                        <span className="text-taupe">Post Link:</span>
                         <a
                           href={selectedReward.instagramPostUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-accent underline flex items-center gap-1 text-xs"
+                          className="text-accent underline flex items-center gap-1 text-[10px]"
                         >
                           Open Link <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-slate">Submitted:</span>
-                      <span>{formatDate(selectedReward.createdAt)}</span>
+                      <span className="text-taupe">Submitted:</span>
+                      <span className="text-ink">{formatDate(selectedReward.createdAt)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Order Information */}
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-slate font-semibold mb-2">
+                  <h4 className="font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-2">
                     Qualifying Purchase Order
                   </h4>
-                  <div className="bg-white p-3 border border-pearl rounded flex justify-between items-center">
+                  <div className="bg-surface p-3 border border-mist flex justify-between items-center">
                     <div>
-                      <span className="font-mono font-medium">#{selectedReward.orderNumber}</span>
-                      <div className="text-xs text-slate font-mono">ID: {selectedReward.orderId}</div>
+                      <span className="font-mono font-medium text-ink">#{selectedReward.orderNumber}</span>
+                      <div className="text-[10px] text-taupe font-mono">ID: {selectedReward.orderId}</div>
                     </div>
                     <Link
                       to={`/admin/orders/${selectedReward.orderId}`}
-                      className="text-xs text-accent underline"
+                      className="text-[10px] text-accent underline"
                     >
                       View Order
                     </Link>
@@ -551,23 +553,23 @@ export default function AdminInstagramRewards() {
                 {/* Coupon Information (if generated) */}
                 {selectedReward.couponCode && (
                   <div>
-                    <h4 className="text-xs uppercase tracking-wider text-slate font-semibold mb-2">
+                    <h4 className="font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-2">
                       Generated Coupon Details
                     </h4>
-                    <div className="bg-emerald-50 border border-emerald-200 p-4 rounded space-y-2">
+                    <div className="bg-emerald-50 border border-emerald-200 p-4 space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs text-emerald-800 uppercase font-semibold">Coupon Code</span>
-                        <span className="font-mono font-bold text-emerald-900 bg-white px-2 py-1 border border-emerald-300 rounded">
+                        <span className="font-ui text-[10px] uppercase tracking-[.14em] text-emerald-800">Coupon Code</span>
+                        <span className="font-mono font-bold text-emerald-900 bg-white px-2 py-1 border border-emerald-300">
                           {selectedReward.couponCode}
                         </span>
                       </div>
                       {selectedReward.coupon && (
                         <>
-                          <div className="flex justify-between text-xs text-emerald-800">
+                          <div className="flex justify-between font-ui text-[10px] text-emerald-800">
                             <span>Discount:</span>
-                            <span className="font-semibold">{selectedReward.coupon.discountPercentage}% OFF</span>
+                            <span className="font-medium">{selectedReward.coupon.discountPercentage}% OFF</span>
                           </div>
-                          <div className="flex justify-between text-xs text-emerald-800">
+                          <div className="flex justify-between font-ui text-[10px] text-emerald-800">
                             <span>Usage Limit:</span>
                             <span>{selectedReward.coupon.timesUsed} / {selectedReward.coupon.usageLimit} used</span>
                           </div>
@@ -580,21 +582,21 @@ export default function AdminInstagramRewards() {
                 {/* Verification / Rejection Audit Info */}
                 {selectedReward.verifiedBy && (
                   <div>
-                    <h4 className="text-xs uppercase tracking-wider text-slate font-semibold mb-2">
+                    <h4 className="font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-2">
                       Verification Audit
                     </h4>
-                    <div className="bg-white p-3 border border-pearl rounded space-y-1 text-xs">
+                    <div className="bg-surface p-3 border border-mist space-y-1 font-ui text-[10px]">
                       <div>
-                        <span className="text-slate">Staff Verifier:</span>{" "}
-                        <span className="font-medium">{selectedReward.verifierName || selectedReward.verifiedBy}</span>
+                        <span className="text-taupe">Staff Verifier:</span>{" "}
+                        <span className="font-medium text-ink">{selectedReward.verifierName || selectedReward.verifiedBy}</span>
                       </div>
                       <div>
-                        <span className="text-slate">Verified At:</span>{" "}
-                        <span>{formatDate(selectedReward.verifiedAt)}</span>
+                        <span className="text-taupe">Verified At:</span>{" "}
+                        <span className="text-ink">{formatDate(selectedReward.verifiedAt)}</span>
                       </div>
                       {selectedReward.rejectionReason && (
-                        <div className="mt-2 text-rose-700 bg-rose-50 p-2 rounded border border-rose-200">
-                          <span className="font-semibold">Rejection Reason:</span>{" "}
+                        <div className="mt-2 text-rose-700 bg-rose-50 p-2 border border-rose-200">
+                          <span className="font-medium">Rejection Reason:</span>{" "}
                           {selectedReward.rejectionReason}
                         </div>
                       )}
@@ -605,7 +607,7 @@ export default function AdminInstagramRewards() {
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-6 border-t border-pearl flex justify-end gap-3">
+            <div className="pt-6 border-t border-mist flex justify-end gap-3">
               <AtelierButton variant="outline" onClick={() => setIsDetailOpen(false)}>
                 Close
               </AtelierButton>
@@ -621,7 +623,7 @@ export default function AdminInstagramRewards() {
                     Reject
                   </AtelierButton>
                   <AtelierButton
-                    variant="solid"
+                    variant="primary"
                     onClick={() => {
                       setIsDetailOpen(false);
                       handleOpenApproveModal(selectedReward);
@@ -650,22 +652,22 @@ export default function AdminInstagramRewards() {
 
       {/* 4. Approval Confirmation Modal */}
       {isApproveOpen && selectedReward && (
-        <div className="fixed inset-0 z-50 bg-charcoal/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-ivory max-w-md w-full p-6 shadow-xl rounded border border-pearl">
-            <h3 className="font-editorial text-lg text-charcoal mb-2">
+        <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-canvas max-w-md w-full p-6 shadow-xl border border-mist">
+            <h3 className="font-display text-lg font-light text-ink mb-2">
               Approve Loyalty Reward?
             </h3>
-            <p className="text-sm text-slate mb-4">
+            <p className="font-ui text-xs text-taupe mb-4">
               Confirm approval for <strong>@{selectedReward.instagramUsername}</strong> on order <strong>#{selectedReward.orderNumber}</strong>.
             </p>
 
-            <div className="bg-emerald-50 border border-emerald-200 p-3 rounded text-xs text-emerald-800 mb-4">
+            <div className="bg-emerald-50 border border-emerald-200 p-3 font-ui text-[10px] text-emerald-800 mb-4">
               A personal, single-use reward discount coupon will be generated automatically for <strong>{selectedReward.customerName}</strong>.
             </div>
 
             <div className="mb-4">
-              <label className="block text-xs uppercase tracking-wider text-slate mb-1 font-semibold">
-                Discount Percentage <span className="text-rose-500">*</span>
+              <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+                Discount Percentage <span className="text-accent">*</span>
               </label>
               <div className="relative">
                 <input
@@ -676,22 +678,22 @@ export default function AdminInstagramRewards() {
                   value={approveDiscount}
                   onChange={(e) => setApproveDiscount(e.target.value)}
                   placeholder="Enter % e.g. 10"
-                  className="w-full border border-pearl px-3 py-2 text-sm bg-white focus:outline-none focus:border-charcoal pr-8"
+                  className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas placeholder:text-taupe focus:outline-none focus:border-accent pr-8"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate text-sm">%</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-taupe text-xs">%</span>
               </div>
-              <p className="text-[11px] text-slate mt-1">Set the discount % for this customer's reward coupon.</p>
+              <p className="font-ui text-[10px] text-taupe mt-1">Set the discount % for this customer's reward coupon.</p>
             </div>
 
             <div className="mb-4">
-              <label className="block text-xs uppercase tracking-wider text-slate mb-1">
+              <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
                 Internal Notes (Optional)
               </label>
               <textarea
                 value={approveNotes}
                 onChange={(e) => setApproveNotes(e.target.value)}
                 placeholder="Verified via screenshot or manual check..."
-                className="w-full border border-pearl p-2 text-xs bg-white focus:outline-none focus:border-charcoal"
+                className="w-full border border-mist p-2 font-ui text-xs text-ink bg-canvas placeholder:text-taupe focus:outline-none focus:border-accent"
                 rows={2}
               />
             </div>
@@ -705,7 +707,7 @@ export default function AdminInstagramRewards() {
                 Cancel
               </AtelierButton>
               <AtelierButton
-                variant="solid"
+                variant="primary"
                 onClick={handleConfirmApproval}
                 disabled={isProcessing}
               >
@@ -718,24 +720,24 @@ export default function AdminInstagramRewards() {
 
       {/* 5. Reject Modal */}
       {isRejectOpen && selectedReward && (
-        <div className="fixed inset-0 z-50 bg-charcoal/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-ivory max-w-md w-full p-6 shadow-xl rounded border border-pearl">
-            <h3 className="font-editorial text-lg text-charcoal mb-2">
+        <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-canvas max-w-md w-full p-6 shadow-xl border border-mist">
+            <h3 className="font-display text-lg font-light text-ink mb-2">
               Reject Loyalty Reward
             </h3>
-            <p className="text-sm text-slate mb-4">
+            <p className="font-ui text-xs text-taupe mb-4">
               Please enter the reason for rejecting <strong>@{selectedReward.instagramUsername}</strong>'s reward.
             </p>
 
             <div className="mb-4">
-              <label className="block text-xs uppercase tracking-wider text-slate mb-1 font-semibold">
-                Rejection Reason *
+              <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+                Rejection Reason <span className="text-accent">*</span>
               </label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="e.g. Tagged account was incorrect or post did not display qualifying saree."
-                className="w-full border border-pearl p-2 text-sm bg-white focus:outline-none focus:border-charcoal"
+                className="w-full border border-mist p-2 font-ui text-xs text-ink bg-canvas placeholder:text-taupe focus:outline-none focus:border-accent"
                 rows={3}
               />
             </div>
@@ -749,7 +751,7 @@ export default function AdminInstagramRewards() {
                 Cancel
               </AtelierButton>
               <AtelierButton
-                variant="solid"
+                variant="primary"
                 onClick={handleConfirmRejection}
                 disabled={isProcessing}
               >
@@ -762,29 +764,29 @@ export default function AdminInstagramRewards() {
 
       {/* 6. Success Modal for Generated Coupon */}
       {generatedCoupon && (
-        <div className="fixed inset-0 z-50 bg-charcoal/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-ivory max-w-md w-full p-6 shadow-2xl rounded border border-pearl text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+        <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-canvas max-w-md w-full p-6 shadow-2xl border border-mist text-center">
+            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h3 className="font-editorial text-xl text-charcoal mb-1">
-              Reward Coupon Issued Successfully!
+            <h3 className="font-display text-xl font-light text-ink mb-1">
+              Reward Coupon Issued
             </h3>
-            <p className="text-xs text-slate mb-4">
+            <p className="font-ui text-xs text-taupe mb-4">
               A {generatedCoupon.discountPercentage}% discount coupon has been generated for <strong>{generatedCoupon.customerName}</strong>.
             </p>
 
-            <div className="bg-white border-2 border-dashed border-emerald-400 p-4 rounded mb-6 flex justify-between items-center">
+            <div className="bg-surface border border-dashed border-emerald-400 p-4 mb-6 flex justify-between items-center">
               <span className="font-mono text-lg font-bold text-emerald-900 tracking-wider">
                 {generatedCoupon.code}
               </span>
               <button
                 onClick={() => handleCopyCouponCode(generatedCoupon.code)}
-                className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded border border-emerald-300 hover:bg-emerald-100"
+                className="flex items-center gap-1 font-ui text-[10px] uppercase tracking-[.12em] text-emerald-700 bg-emerald-50 px-2.5 py-1.5 border border-emerald-300 hover:bg-emerald-100 transition-colors"
               >
                 {copiedCode ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" /> Copied!
+                    <Check className="w-3.5 h-3.5 text-emerald-600" /> Copied
                   </>
                 ) : (
                   <>
@@ -794,7 +796,7 @@ export default function AdminInstagramRewards() {
               </button>
             </div>
 
-            <AtelierButton variant="solid" className="w-full" onClick={() => setGeneratedCoupon(null)}>
+            <AtelierButton variant="primary" className="w-full" onClick={() => setGeneratedCoupon(null)}>
               Done
             </AtelierButton>
           </div>
@@ -802,25 +804,25 @@ export default function AdminInstagramRewards() {
       )}
       {/* 7. Manual Claim Modal */}
       {isManualClaimOpen && (
-        <div className="fixed inset-0 z-50 bg-charcoal/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-ivory max-w-md w-full p-6 shadow-xl rounded border border-pearl">
+        <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-canvas max-w-md w-full p-6 shadow-xl border border-mist">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-editorial text-lg text-charcoal">Add Manual Reward</h3>
+              <h3 className="font-display text-lg font-light text-ink">Add Manual Reward</h3>
               <button
                 onClick={() => setIsManualClaimOpen(false)}
-                className="text-slate hover:text-charcoal p-1"
+                className="text-taupe hover:text-ink p-1"
               >
                 ✕
               </button>
             </div>
-            <p className="text-xs text-slate mb-5">
+            <p className="font-ui text-xs text-taupe mb-5">
               Issue a reward coupon directly to a customer by entering their User ID or email, and the Order ID or order number.
             </p>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-slate font-semibold mb-1">
-                  Customer — User ID or Email *
+                <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+                  Customer — User ID or Email <span className="text-accent">*</span>
                 </label>
                 <input
                   type="text"
@@ -829,13 +831,13 @@ export default function AdminInstagramRewards() {
                     setManualClaimForm((f) => ({ ...f, customerIdentifier: e.target.value }))
                   }
                   placeholder="e.g. user-12345 or customer@example.com"
-                  className="w-full border border-pearl px-3 py-2 text-sm bg-white focus:outline-none focus:border-charcoal"
+                  className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas placeholder:text-taupe focus:outline-none focus:border-accent"
                 />
               </div>
 
               <div>
-                <label className="block text-xs uppercase tracking-wider text-slate font-semibold mb-1">
-                  Order — Order ID or Order Number *
+                <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+                  Order — Order ID or Order Number <span className="text-accent">*</span>
                 </label>
                 <input
                   type="text"
@@ -844,12 +846,12 @@ export default function AdminInstagramRewards() {
                     setManualClaimForm((f) => ({ ...f, orderIdentifier: e.target.value }))
                   }
                   placeholder="e.g. ord-12345 or PF-0001"
-                  className="w-full border border-pearl px-3 py-2 text-sm bg-white focus:outline-none focus:border-charcoal"
+                  className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas placeholder:text-taupe focus:outline-none focus:border-accent"
                 />
               </div>
 
               <div>
-                <label className="block text-xs uppercase tracking-wider text-slate font-semibold mb-1">
+                <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
                   Notes (Optional)
                 </label>
                 <input
@@ -859,12 +861,12 @@ export default function AdminInstagramRewards() {
                     setManualClaimForm((f) => ({ ...f, notes: e.target.value }))
                   }
                   placeholder="e.g. Verified via DM screenshot"
-                  className="w-full border border-pearl px-3 py-2 text-sm bg-white focus:outline-none focus:border-charcoal"
+                  className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas placeholder:text-taupe focus:outline-none focus:border-accent"
                 />
               </div>
 
               <div>
-                <label className="block text-xs uppercase tracking-wider text-slate font-semibold mb-1">
+                <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
                   Discount Percentage
                 </label>
                 <div className="relative">
@@ -878,9 +880,9 @@ export default function AdminInstagramRewards() {
                       setManualClaimForm((f) => ({ ...f, discountPercentage: e.target.value }))
                     }
                     placeholder="e.g. 10 (leave blank for default)"
-                    className="w-full border border-pearl px-3 py-2 text-sm bg-white focus:outline-none focus:border-charcoal pr-8"
+                    className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas placeholder:text-taupe focus:outline-none focus:border-accent pr-8"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate text-sm">%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-taupe text-xs">%</span>
                 </div>
               </div>
 
@@ -891,10 +893,10 @@ export default function AdminInstagramRewards() {
                   onChange={(e) =>
                     setManualClaimForm((f) => ({ ...f, autoApprove: e.target.checked }))
                   }
-                  className="w-4 h-4 accent-charcoal"
+                  className="w-4 h-4 accent-ink"
                 />
-                <span className="text-sm text-charcoal">
-                  Approve & issue coupon immediately
+                <span className="font-ui text-xs text-ink">
+                  Approve &amp; issue coupon immediately
                 </span>
               </label>
             </div>
@@ -908,7 +910,7 @@ export default function AdminInstagramRewards() {
                 Cancel
               </AtelierButton>
               <AtelierButton
-                variant="solid"
+                variant="primary"
                 onClick={handleManualClaim}
                 disabled={isProcessing}
               >

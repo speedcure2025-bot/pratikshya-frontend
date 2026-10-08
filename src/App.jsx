@@ -120,15 +120,23 @@ const AdminCollectionForm = lazy(() => import("./pages/admin/taxonomy/AdminColle
 const AdminCollectionDetail = lazy(() => import("./pages/admin/taxonomy/AdminCollectionDetail"));
 const AdminAnalytics = lazy(() => import("./pages/admin/analytics/AdminAnalytics"));
 const AiBusinessAssistant = lazy(() => import("./pages/admin/AiBusinessAssistant"));
+const AdminAttendanceDay = lazy(() => import("./pages/admin/attendance/AdminAttendanceDay"));
+const AdminAttendanceDevices = lazy(() => import("./pages/admin/attendance/AdminAttendanceDevices"));
+const AdminAttendanceUnmapped = lazy(() => import("./pages/admin/attendance/AdminAttendanceUnmapped"));
+const AdminLeaveQueue = lazy(() => import("./pages/admin/leave/AdminLeaveQueue"));
+const AdminPayments = lazy(() => import("./pages/admin/payments/AdminPayments"));
+const AdminPaymentDetail = lazy(() => import("./pages/admin/payments/AdminPaymentDetail"));
+const AdminPaymentReconcile = lazy(() => import("./pages/admin/payments/AdminPaymentReconcile"));
 
-/* Inventory screens remain LIVE for the Employee portal only. The Admin
-   inventory routes were deferred (localStorage simulation, blocker B-01);
-   see the redirect block in the admin route table below. */
+/* Inventory screens — live for both Admin and Employee portals. */
 const InventoryDashboardPage = lazy(() => import("./components/inventory/InventoryDashboardPage"));
 const InventoryOperationPage = lazy(() => import("./components/inventory/InventoryOperationPage"));
 const InventoryTransfersPage = lazy(() => import("./components/inventory/InventoryTransfersPage"));
 const InventoryMovementsPage = lazy(() => import("./components/inventory/InventoryMovementsPage"));
 const InventoryLowStockPage = lazy(() => import("./components/inventory/InventoryLowStockPage"));
+const AdminWarehouses = lazy(() => import("./pages/admin/warehouses/AdminWarehouses"));
+const AdminWarehouseForm = lazy(() => import("./pages/admin/warehouses/AdminWarehouseForm"));
+const AdminWarehouseDetail = lazy(() => import("./pages/admin/warehouses/AdminWarehouseDetail"));
 
 const dedicatedPaths = new Set([
   "/explore",
@@ -250,19 +258,18 @@ export default function App() {
                           <Route path="/admin/customers/:customerId" element={<AdminCustomerDetail />} />
                           <Route path="/admin/returns" element={<AdminReturns />} />
                           <Route path="/admin/returns/:returnId" element={<AdminReturnDetail />} />
-                          {/* Inventory suite deferred: the implementation is a browser-localStorage
-                              simulation and the backend inventory ledger is an empty stub
-                              (blocker B-01). Stock truth for admins lives on the product
-                              records (catalog_product.stock) — see the dashboard and the
-                              products desk. The Employee portal keeps its routes. */}
-                          <Route path="/admin/inventory" element={<Navigate to="/admin" replace />} />
-                          <Route path="/admin/inventory/receive" element={<Navigate to="/admin" replace />} />
-                          <Route path="/admin/inventory/adjust" element={<Navigate to="/admin" replace />} />
-                          <Route path="/admin/inventory/transfers" element={<Navigate to="/admin" replace />} />
-                          <Route path="/admin/inventory/movements" element={<Navigate to="/admin" replace />} />
-                          <Route path="/admin/inventory/low-stock" element={<Navigate to="/admin" replace />} />
-                          <Route path="/admin/warehouses" element={<Navigate to="/admin" replace />} />
-                          <Route path="/admin/stock-movements" element={<Navigate to="/admin" replace />} />
+                          {/* Inventory suite — live for Admin portal (backend ledger active) */}
+                          <Route path="/admin/inventory" element={<InventoryDashboardPage portal="admin" />} />
+                          <Route path="/admin/inventory/movements" element={<InventoryMovementsPage portal="admin" />} />
+                          <Route path="/admin/inventory/low-stock" element={<InventoryLowStockPage portal="admin" />} />
+                          <Route path="/admin/inventory/receive" element={<InventoryOperationPage portal="admin" operation="receive" />} />
+                          <Route path="/admin/inventory/adjust" element={<InventoryOperationPage portal="admin" operation="adjust" />} />
+                          <Route path="/admin/inventory/transfers" element={<InventoryTransfersPage portal="admin" />} />
+                          <Route path="/admin/warehouses" element={<AdminWarehouses />} />
+                          <Route path="/admin/warehouses/new" element={<AdminWarehouseForm />} />
+                          <Route path="/admin/warehouses/:warehouseId" element={<AdminWarehouseDetail />} />
+                          <Route path="/admin/warehouses/:warehouseId/edit" element={<AdminWarehouseForm />} />
+                          <Route path="/admin/stock-movements" element={<Navigate to="/admin/inventory/movements" replace />} />
                           <Route path="/admin/analytics" element={<AdminAnalytics />} />
                           <Route path="/admin/analytics/sales" element={<AdminAnalytics />} />
                           <Route path="/admin/analytics/products" element={<AdminAnalytics />} />
@@ -272,6 +279,14 @@ export default function App() {
                           <Route path="/admin/analytics/offers" element={<AdminAnalytics />} />
                           <Route path="/admin/ai-assistant" element={<AiBusinessAssistant />} />
                           <Route path="/admin/settings" element={<AdminSettings />} />
+                          <Route path="/admin/attendance" element={<AdminAttendanceDay />} />
+                          <Route path="/admin/attendance/devices" element={<AdminAttendanceDevices />} />
+                          <Route path="/admin/attendance/unmapped" element={<AdminAttendanceUnmapped />} />
+                          <Route path="/admin/leave" element={<AdminLeaveQueue />} />
+
+                          <Route path="/admin/payments" element={<AdminPayments />} />
+                          <Route path="/admin/payments/reconcile" element={<AdminPaymentReconcile />} />
+                          <Route path="/admin/payments/:sessionId" element={<AdminPaymentDetail />} />
 
                           <Route path="/admin/*" element={<AdminNotFound />} />
                         </Route>
@@ -337,9 +352,17 @@ export default function App() {
                           <Route path="/super-admin/returns" element={<AdminReturns />} />
                           <Route path="/super-admin/returns/:returnId" element={<AdminReturnDetail />} />
 
-                          <Route path="/super-admin/inventory" element={<Navigate to="/super-admin" replace />} />
-                          <Route path="/super-admin/inventory/*" element={<Navigate to="/super-admin" replace />} />
-                          <Route path="/super-admin/warehouses" element={<Navigate to="/super-admin" replace />} />
+                          {/* Inventory suite — mirrored for super-admin workspace */}
+                          <Route path="/super-admin/inventory" element={<InventoryDashboardPage portal="super-admin" />} />
+                          <Route path="/super-admin/inventory/movements" element={<InventoryMovementsPage portal="super-admin" />} />
+                          <Route path="/super-admin/inventory/low-stock" element={<InventoryLowStockPage portal="super-admin" />} />
+                          <Route path="/super-admin/inventory/receive" element={<InventoryOperationPage portal="super-admin" operation="receive" />} />
+                          <Route path="/super-admin/inventory/adjust" element={<InventoryOperationPage portal="super-admin" operation="adjust" />} />
+                          <Route path="/super-admin/inventory/transfers" element={<InventoryTransfersPage portal="super-admin" />} />
+                          <Route path="/super-admin/warehouses" element={<AdminWarehouses />} />
+                          <Route path="/super-admin/warehouses/new" element={<AdminWarehouseForm />} />
+                          <Route path="/super-admin/warehouses/:warehouseId" element={<AdminWarehouseDetail />} />
+                          <Route path="/super-admin/warehouses/:warehouseId/edit" element={<AdminWarehouseForm />} />
 
                           <Route path="/super-admin/analytics" element={<AdminAnalytics />} />
                           <Route path="/super-admin/analytics/sales" element={<AdminAnalytics />} />
@@ -351,6 +374,14 @@ export default function App() {
 
                           <Route path="/super-admin/settings" element={<AdminSettings />} />
                           <Route path="/super-admin/ai-assistant" element={<AiBusinessAssistant />} />
+                          <Route path="/super-admin/attendance" element={<AdminAttendanceDay />} />
+                          <Route path="/super-admin/attendance/devices" element={<AdminAttendanceDevices />} />
+                          <Route path="/super-admin/attendance/unmapped" element={<AdminAttendanceUnmapped />} />
+                          <Route path="/super-admin/leave" element={<AdminLeaveQueue />} />
+
+                          <Route path="/super-admin/payments" element={<AdminPayments />} />
+                          <Route path="/super-admin/payments/reconcile" element={<AdminPaymentReconcile />} />
+                          <Route path="/super-admin/payments/:sessionId" element={<AdminPaymentDetail />} />
 
                           <Route path="/super-admin/*" element={<AdminNotFound />} />
                         </Route>

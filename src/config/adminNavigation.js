@@ -14,14 +14,13 @@
  * CONSOLIDATION (2026-09): simulated / non-durable Admin surfaces were
  * removed from the visible production navigation and their routes now
  * redirect safely (see App.jsx):
- *   • Inventory suite (localStorage simulation — backend ledger is an empty
- *     stub, blocker B-01)        → deferred, employee portal keeps its routes
  *   • Media Review Queue (session-mirror only, no durable backend workflow)
  *   • Media Product Mapping desk (overlaps the canonical Product Media Manager)
  *   • Standalone Media detail page (session mirror; library stays canonical)
  *   • Activity log (no backend audit writers exist yet — blocker B-09)
  * The source files are retained as clearly-deferred code; nothing was
  * deleted, so these surfaces can return behind real backends.
+ * Inventory suite restored (2026-10): backend ledger now live, blocker B-01 resolved.
  */
 
 export const ADMIN_BRAND = {
@@ -93,6 +92,53 @@ export const ADMIN_NAV_GROUPS = [
     ],
   },
   {
+    id: "workforce",
+    label: "Workforce",
+    icon: "usersRound",
+    items: [
+      {
+        id: "attendance",
+        label: "Attendance",
+        to: "/admin/attendance",
+        icon: "clock",
+        permission: "people.view",
+        children: [
+          { id: "attendance-devices", label: "Devices", to: "/admin/attendance/devices", icon: "monitor", permission: "people.manage" },
+          { id: "attendance-unmapped", label: "Unmapped Pins", to: "/admin/attendance/unmapped", icon: "linkSlash", permission: "people.manage" },
+        ],
+      },
+      {
+        id: "leave",
+        label: "Leave",
+        to: "/admin/leave",
+        icon: "calendarOff",
+        permission: "people.view",
+      },
+    ],
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    icon: "warehouse",
+    items: [
+      {
+        id: "inventory-dashboard",
+        label: "Stock",
+        to: "/admin/inventory",
+        icon: "boxes",
+        permission: "inventory.view",
+        children: [
+          { id: "inventory-movements", label: "Movements", to: "/admin/inventory/movements", icon: "arrowLeftRight", permission: "inventory.view" },
+          { id: "inventory-low-stock", label: "Low Stock", to: "/admin/inventory/low-stock", icon: "alertTriangle", permission: "inventory.view" },
+          { id: "inventory-receive", label: "Receive", to: "/admin/inventory/receive", icon: "packageCheck", permission: "inventory.manage" },
+          { id: "inventory-adjust", label: "Adjust", to: "/admin/inventory/adjust", icon: "sliders", permission: "inventory.manage" },
+          { id: "inventory-transfers", label: "Transfers", to: "/admin/inventory/transfers", icon: "truck", permission: "inventory.manage" },
+        ],
+      },
+      { id: "warehouses", label: "Warehouses", to: "/admin/warehouses", icon: "building2", permission: "inventory.manage" },
+    ],
+  },
+  {
     id: "orders",
     label: "Orders & Customers",
     icon: "bag",
@@ -100,6 +146,16 @@ export const ADMIN_NAV_GROUPS = [
       { id: "orders", label: "Orders", to: "/admin/orders", icon: "bag", permission: "orders.view" },
       { id: "customers", label: "Customers", to: "/admin/customers", icon: "users", permission: "customers.view" },
       { id: "returns", label: "Returns", to: "/admin/returns", icon: "undo", permission: "returns.view" },
+      {
+        id: "payments",
+        label: "Payments",
+        to: "/admin/payments",
+        icon: "creditCard",
+        permission: "settings.view",
+        children: [
+          { id: "payments-reconcile", label: "Reconcile", to: "/admin/payments/reconcile", icon: "refreshCw", permission: "settings.view" },
+        ],
+      },
     ],
   },
   {
