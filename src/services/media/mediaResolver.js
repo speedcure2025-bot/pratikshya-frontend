@@ -383,7 +383,7 @@ export const selectSareeEditProducts = (
   const candidates = (products || [])
     .filter(
       (product) =>
-        product?.category === category.id &&
+        (product?.category === category.id || product?.category === category.slug) &&
         product.status === "PUBLISHED" &&
         Boolean(product.slug)
     )

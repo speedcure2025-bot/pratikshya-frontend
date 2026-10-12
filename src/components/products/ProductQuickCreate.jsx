@@ -43,13 +43,17 @@ const STEPS = [
 export default function ProductQuickCreate({
   productId = null,
   portal = "admin",
+  basePath = "/admin",
   actor = null,
   canPublish = false,
   exitTo = "/",
 }) {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const productsRoot = portal === "admin" ? "/admin" : "/employee";
+  const productsRoot = basePath;
+
+  /** True for both "admin" and "super-admin" portals — both use the admin API scope. */
+  const isAdminPortal = portal === "admin" || portal === "super-admin";
 
   const step = Math.min(3, Math.max(1, Number(params.get("step")) || 1));
   const setStep = (next) => {
@@ -109,6 +113,17 @@ export default function ProductQuickCreate({
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
+
+  /* Clamp step to 1 when the draft hasn't been saved yet. Steps 2 and 3
+   * require a persisted product ID — reaching them without one (e.g. via
+   * the browser back button, a bookmark, or manual URL edit) would send
+   * an incomplete request to the server. */
+  useEffect(() => {
+    if (!draft.exists && step > 1) {
+      setStep(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.exists]);
 
   const { items: mediaItems, summary: mediaSummary } = useProductMedia(draft.id);
   const hasCover = Boolean(
@@ -173,6 +188,11 @@ export default function ProductQuickCreate({
   };
 
   const handleContinueFromCommerce = async () => {
+    if (!draft.exists || !draft.category) {
+      setStep(1);
+      announce("Complete the identity step first — name and category are required.", "error");
+      return;
+    }
     if (pricing.errors.length) {
       announce(pricing.errors[0], "error");
       return;
@@ -191,7 +211,7 @@ export default function ProductQuickCreate({
     }
     const product = await persist();
     if (!product) return;
-    announce(portal === "admin" ? "Draft saved on the server." : "Draft saved successfully.");
+    announce(isAdminPortal ? "Draft saved on the server." : "Draft saved successfully.");
     if (isNew) afterFirstSave(product, step);
   };
 
@@ -213,7 +233,7 @@ export default function ProductQuickCreate({
     }
     const product = await persist();
     if (!product) return;
-    if (portal === "admin") {
+    if (isAdminPortal) {
       const result = await runAction(product.id ?? draft.id, "submitReview");
       if (!result.ok) {
         announce(

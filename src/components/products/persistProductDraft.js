@@ -120,8 +120,11 @@ export function adminCreatedThisProduct(draft, actor) {
   return mine.includes(creator);
 }
 
+/** Returns true for any admin-tier portal value ("admin" or "super-admin"). */
+const isAdminPortal = (p) => p === "admin" || p === "super-admin";
+
 export async function loadProductDraft(productId, portal = "admin") {
-  if (portal === "admin") {
+  if (isAdminPortal(portal)) {
     return fetchAdminProduct(productId);
   }
   const result = await apiEmployeeGetProduct(productId);
@@ -138,7 +141,7 @@ export async function loadProductDraft(productId, portal = "admin") {
  * @returns {Promise<{ ok: true, product: object } | { ok: false, error: string }>}
  */
 export async function persistProductDraft({ draft, portal, actor }) {
-  if (portal === "admin") {
+  if (isAdminPortal(portal)) {
     const payload = buildProductDraftPayload(draft);
     let id = draft.id;
     if (!draft.exists && !id) {

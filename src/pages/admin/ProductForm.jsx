@@ -33,7 +33,8 @@ export default function ProductForm() {
     >
       <ProductCreateWorkspace
         productId={productId}
-        portal="admin"
+        portal={isSuperAdmin ? "super-admin" : "admin"}
+        basePath={prefix}
         actor={actor}
         canPublish
         exitTo={`${prefix}/products`}

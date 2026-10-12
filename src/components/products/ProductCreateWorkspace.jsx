@@ -45,6 +45,7 @@ export function productCreateDescription(useQuick) {
 export default function ProductCreateWorkspace({
   productId = null,
   portal = "admin",
+  basePath = "/admin",
   actor = null,
   canPublish = false,
   exitTo,
@@ -57,6 +58,7 @@ export default function ProductCreateWorkspace({
       key={key}
       productId={productId}
       portal={portal}
+      basePath={basePath}
       actor={actor}
       canPublish={canPublish}
       exitTo={exitTo}
@@ -66,6 +68,7 @@ export default function ProductCreateWorkspace({
       key={key}
       productId={productId}
       portal={portal}
+      basePath={basePath}
       actor={actor}
       canPublish={canPublish}
       exitTo={exitTo}

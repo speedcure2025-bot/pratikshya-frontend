@@ -133,9 +133,11 @@ const resolveImageSrc = (image) => {
 
 export default function HeroCarousel({ slides: slideData = [], heroMedia }) {
   const slideItems = Array.from(slideData);
+  const slideKey = slideItems.map((s) => s.id || s.image).join("|");
   const slides = useMemo(
     () => buildSlides(slideItems, heroMedia),
-    [slideItems.length, heroMedia, ...slideItems.map((s) => s.id || s.image)]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [slideKey, heroMedia]
   );
   const count = slides.length;
 

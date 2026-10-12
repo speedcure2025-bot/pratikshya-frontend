@@ -82,12 +82,16 @@ const SECTIONS = [
 export default function ProductEditor({
   productId = null,
   portal = "admin",
+  basePath = "/admin",
   actor = null,
   canPublish = false,
   exitTo = "/",
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  /** True for both "admin" and "super-admin" portals — both use the admin API scope. */
+  const isAdminPortal = portal === "admin" || portal === "super-admin";
 
   /*
    * The server is the source of truth for an existing record. A hard
@@ -176,7 +180,7 @@ export default function ProductEditor({
   );
 
   useEffect(() => {
-    if (portal !== "admin" || !availabilityQuery) {
+    if (!isAdminPortal || !availabilityQuery) {
       setIdentityVerdict(null);
       return undefined;
     }
@@ -208,7 +212,7 @@ export default function ProductEditor({
      * the "required" checks so an empty field still reports as missing, and it
      * is the only source for product-level collisions — no local fallback.
      */
-    if (portal === "admin") {
+    if (isAdminPortal) {
       const identity = identityErrors(identityVerdict, availabilityQuery);
       if (identity.sku && draft.sku.trim()) next.sku = identity.sku;
       if (identity.slug) next.slug = identity.slug;
@@ -251,7 +255,7 @@ export default function ProductEditor({
   const [serverPublishIssues, setServerPublishIssues] = useState(null);
   const [serverIssuesError, setServerIssuesError] = useState(null);
   const refreshServerIssues = useCallback(() => {
-    if (portal !== "admin" || !draft.id || isNew) return;
+    if (!isAdminPortal || !draft.id || isNew) return;
     apiAdminGetPublishIssues(draft.id).then((result) => {
       if (result.ok) {
         setServerPublishIssues(result.issues ?? []);
@@ -261,12 +265,12 @@ export default function ProductEditor({
         setServerIssuesError(result.error ?? "Could not load the server publish checklist.");
       }
     });
-  }, [draft.id, isNew, portal]);
+  }, [draft.id, isNew, portal]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     refreshServerIssues();
   }, [refreshServerIssues, baseline]);
   const displayIssues =
-    portal === "admin" && serverPublishIssues ? serverPublishIssues : publishIssues;
+    isAdminPortal && serverPublishIssues ? serverPublishIssues : publishIssues;
 
   const sectionDot = (id) => {
     if (id === "basics") return Boolean(errors.name || errors.sku || errors.category);
@@ -309,8 +313,7 @@ export default function ProductEditor({
   /* --- actions ------------------------------------------------------ */
 
   const afterFirstSave = (product) => {
-    const productsRoot = portal === "admin" ? "/admin" : "/employee";
-    navigate(`${productsRoot}/products/${product.id}/edit`, {
+    navigate(`${basePath}/products/${product.id}/edit`, {
       replace: true,
       state: { section: "media" },
     });
@@ -334,7 +337,7 @@ export default function ProductEditor({
     }
     const product = await persist();
     if (!product) return;
-    announce(portal === "admin" ? "Draft saved on the server." : "Draft saved successfully.");
+    announce(isAdminPortal ? "Draft saved on the server." : "Draft saved successfully.");
     if (isNew) afterFirstSave(product);
   };
 
@@ -382,7 +385,7 @@ export default function ProductEditor({
     }
     const product = await persist();
     if (!product) return;
-    if (portal === "admin") {
+    if (isAdminPortal) {
       const result = await runAction(product.id ?? draft.id, "submitReview");
       if (!result.ok) {
         announce(formatAdminError(result, { entity: "product", action: "submitted for review" }) ?? "Submission failed.", "error");
@@ -459,7 +462,7 @@ export default function ProductEditor({
       );
       return;
     }
-    if (portal === "admin") {
+    if (isAdminPortal) {
       await runServerAction("publish", "Published — the server has this piece live in the storefront.");
       return;
     }
@@ -477,7 +480,7 @@ export default function ProductEditor({
 
   const handleArchive = async () => {
     if (!draft.id) return;
-    if (portal === "admin") {
+    if (isAdminPortal) {
       await runServerAction("archive", "Product archived on the server — removed from every customer surface.");
       return;
     }
@@ -492,7 +495,7 @@ export default function ProductEditor({
 
   const handleRestore = async () => {
     if (!draft.id) return;
-    if (portal === "admin") {
+    if (isAdminPortal) {
       await runServerAction("restore", "Product restored to draft on the server.");
       return;
     }
@@ -562,7 +565,7 @@ export default function ProductEditor({
     canPublish && draft.exists && workflowState.stage === WORKFLOW_STAGES.APPROVED;
   const canShortcutPublish =
     canPublish &&
-    portal === "admin" &&
+    isAdminPortal &&
     draft.exists &&
     draft.status !== PRODUCT_STATUSES.PUBLISHED &&
     draft.status !== PRODUCT_STATUSES.ARCHIVED &&
@@ -664,7 +667,7 @@ export default function ProductEditor({
         {section === "media" ? <SectionMedia draft={draft} patch={patch} portal={portal} /> : null}
         {section === "seo" ? <SectionSeo draft={draft} patch={patch} errors={errors} /> : null}
         {section === "publishing" ? (
-          <SectionPublishing draft={draft} patch={patch} publishIssues={displayIssues} serverCheck={portal === "admin" ? (serverIssuesError ? `Server checklist unavailable — ${serverIssuesError}` : "Checklist is the server’s own publish gate.") : "Local pre-check — the server re-validates on publish."} />
+          <SectionPublishing draft={draft} patch={patch} publishIssues={displayIssues} serverCheck={isAdminPortal ? (serverIssuesError ? `Server checklist unavailable — ${serverIssuesError}` : "Checklist is the server’s own publish gate.") : "Local pre-check — the server re-validates on publish."} />
         ) : null}
 
         {/* Section stepping navigation */}

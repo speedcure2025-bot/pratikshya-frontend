@@ -240,3 +240,58 @@ Integration (requires Postgres):
 13. Network tab: JSON from API, not SPA HTML, hero images 200
 
 All verified in SQLite unit tests; Postgres E2E requires live DB.
+
+---
+
+## CelebrationEdit — Placement Resolution & Admin Guidance
+
+**Component:** `src/components/storefront/CelebrationEdit.jsx`
+
+### How each edit resolves its image
+
+`CelebrationEdit` fetches five placement entry lists from the marketing media system and resolves the hero image for each of the four editorial cards in this priority order:
+
+| Edit card | Resolution chain |
+|-----------|-----------------|
+| **Bridal** | `BRIDAL_SECTION[0]` → `LEHENGA_SECTION[0]` → `SAREE_SECTION[0]` → editorial frame fallback |
+| **Groom** | `GROOM_SECTION[0]` → editorial frame fallback |
+| **Festive** | `FESTIVE_SECTION[0]` → editorial frame fallback |
+| **Heritage** | Always `resolveEditorialFrame("heritage")` — no placement override by design |
+
+The editorial frame fallback resolves through `resolveEditorialFrame(theme, usedIds)` which draws from the `EDITORIAL` placement media, then from static `imageRef` placeholder data if nothing is configured.
+
+### Design decision: the Bridal three-source fallback
+
+The Bridal card intentionally cascades through three placements (`BRIDAL_SECTION → LEHENGA_SECTION → SAREE_SECTION`) so that the storefront is never blank for this high-visibility card, even when only lehenga or saree editorial media has been uploaded.
+
+**Consequence:** if `BRIDAL_SECTION` is empty and `LEHENGA_SECTION` is also empty, the bridal card will display the first active entry from `SAREE_SECTION`. A saree image shown in the bridal context may be visually incongruous.
+
+**Admin action required:** to ensure the Bridal edit always shows bridal-appropriate imagery, at least one active media entry must be created in the `BRIDAL_SECTION` placement via the admin marketing media panel. This is the single highest-priority placement to populate before going live with the celebration section.
+
+### Recommended placement population checklist
+
+Before launching the `/` homepage celebration section, populate the following placements in order of priority:
+
+1. **`BRIDAL_SECTION`** — at least one active entry. Without this, the bridal card falls back to lehenga or saree media.
+2. **`GROOM_SECTION`** — at least one active entry. Without this, groom falls back to the editorial frame.
+3. **`FESTIVE_SECTION`** — at least one active entry. Without this, festive falls back to the editorial frame.
+4. **`LEHENGA_SECTION`** — optional secondary fallback for bridal.
+5. **`SAREE_SECTION`** — optional tertiary fallback for bridal.
+6. **`EDITORIAL`** placement — used as the final fallback for groom, festive, and heritage; also provides the heritage card image directly.
+
+### Heritage card — intentional no-placement design
+
+The Heritage edit never queries a named placement. It always resolves through `resolveEditorialFrame("heritage", usedIds)` which draws from the `EDITORIAL` placement. This is by design: the heritage story is an editorial statement, not a product-category page, so it is not wired to any single merchandising section. To control the heritage card image, manage entries in the `EDITORIAL` placement.
+
+### How to create a placement entry (admin steps)
+
+1. Upload the image via **Admin → Media → Upload** (namespace: `marketing/`).
+2. Go to **Admin → Media → Marketing** and create a new entry:
+   - `placement`: select `BRIDAL_SECTION` (or whichever section)
+   - `objectKey`: the upload path (e.g. `marketing/bridal-hero.avif`)
+   - `isActive`: `true`
+   - `sortOrder`: `0` (lowest = first, this is what the storefront uses)
+3. Save. The storefront reads `[0]` — the first active entry ordered by `sort_order ASC, created_at ASC`.
+4. To change which image appears, either reorder entries or deactivate the current top entry.
+
+No code changes are required. The resolution logic in `CelebrationEdit.jsx` is correct and intentional.

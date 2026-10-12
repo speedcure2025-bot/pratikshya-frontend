@@ -28,7 +28,7 @@ const edits = [
     title: "Pieces created for moments you'll remember forever.",
     shortTitle: "The bridal edit",
     categoryId: "the-bride",
-    image: "/images/products/bridal/the-bride/lehengas/PF-BR-LEH-0001/primary.avif",
+    image: null,
   },
   {
     id: "groom",
@@ -37,7 +37,7 @@ const edits = [
     title: "Considered ceremonial dressing, tailored for the occasion.",
     shortTitle: "The ceremony edit",
     categoryId: "groom",
-    image: "/images/products/men/groom/groom-collection/PF-M-GRM-GEN-0001/primary.avif",
+    image: null,
   },
   {
     id: "festive",
@@ -46,7 +46,7 @@ const edits = [
     title: "Festive silhouettes with a contemporary soul.",
     shortTitle: "Made to celebrate",
     categoryId: "sarees",
-    image: "/images/collections/editorial/festive-edit/PF-COL-FES-0001/primary.avif",
+    image: null,
   },
   {
     id: "heritage",
@@ -55,7 +55,7 @@ const edits = [
     title: "Craft, colour and stories woven into every piece.",
     shortTitle: "Woven for generations",
     categoryId: "sarees",
-    image: "/images/collections/editorial/heritage-weaves/PF-COL-HER-0001/primary.avif",
+    image: null,
   },
 ];
 
@@ -80,6 +80,23 @@ export default function CelebrationEdit({ excludeIds = null }) {
   const themeFor = (id) =>
     ({ bridal: "bridal", groom: "groom", festive: "festive", heritage: "heritage" }[id] || "festive");
 
+  /*
+   * Image resolution per edit card — priority order:
+   *
+   *  bridal  → BRIDAL_SECTION[0] → LEHENGA_SECTION[0] → SAREE_SECTION[0] → editorial frame
+   *  groom   → GROOM_SECTION[0]  → editorial frame
+   *  festive → FESTIVE_SECTION[0] → editorial frame
+   *  heritage → resolveEditorialFrame("heritage") always (no placement override by design)
+   *
+   * ADMIN NOTE — BRIDAL_SECTION must be populated:
+   *   The bridal card cascades through lehenga and saree placements as
+   *   fallbacks so the section is never blank. If BRIDAL_SECTION and
+   *   LEHENGA_SECTION are both empty, a saree image will appear in the
+   *   bridal context, which may be visually incongruous. Populate at least
+   *   one active entry in BRIDAL_SECTION (Admin → Media → Marketing) before
+   *   going live. See docs/marketing-media-api.md §CelebrationEdit for
+   *   the full placement checklist and admin steps.
+   */
   const images = Object.fromEntries(
     edits.map((edit) => {
       let resolved = null;
@@ -128,8 +145,12 @@ export default function CelebrationEdit({ excludeIds = null }) {
             <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent" aria-hidden="true" />
             <button
               type="button"
-              onClick={() => setActiveId("bridal")}
-              aria-label="Show Bridal Edit as the featured story"
+              onClick={() => {
+                const currentIndex = edits.findIndex((e) => e.id === activeId);
+                const nextIndex = (currentIndex + 1) % edits.length;
+                setActiveId(edits[nextIndex].id);
+              }}
+              aria-label="Show next edit"
               className="absolute bottom-4 right-5 font-ui text-[10px] tracking-[.25em] text-white transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white md:bottom-6 md:right-7"
             >
               {activeEdit.number} / 04
@@ -148,7 +169,7 @@ export default function CelebrationEdit({ excludeIds = null }) {
         </div>
 
         <div className="grid grid-cols-3 gap-3 md:gap-4 lg:grid-cols-1">
-          {edits.slice(1).map((edit) => {
+          {edits.filter((edit) => edit.id !== activeId).map((edit) => {
             const isActive = activeId === edit.id;
             return (
               <button

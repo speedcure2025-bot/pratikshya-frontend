@@ -186,8 +186,8 @@ export function SectionMedia({ draft, patch, portal }) {
   const isSaved = Boolean(draft.id && draft.exists);
   const cover = items.find((item) => item.role === "COVER") ?? items[0];
   const mediaHref =
-    portal === "admin"
-      ? `/admin/products/${draft.id}/media`
+    portal === "admin" || portal === "super-admin"
+      ? `/${portal}/products/${draft.id}/media`
       : `/employee/media/upload?product=${draft.id}`;
 
   const hasCoverImage = Boolean(summary.hasCover || draft.image || cover?.url || cover?.thumbnail);
