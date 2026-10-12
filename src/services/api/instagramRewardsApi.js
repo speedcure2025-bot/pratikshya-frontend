@@ -94,12 +94,15 @@ export async function apiAdminGetInstagramRewardDetail(rewardId) {
 }
 
 /** Admin — Approve reward and generate discount coupon. */
-export async function apiAdminApproveInstagramReward(rewardId, notes, discountPercentage) {
+export async function apiAdminApproveInstagramReward(rewardId, notes, discountPercentage, minimumOrderValue = 0) {
   try {
     if (!discountPercentage || discountPercentage <= 0 || discountPercentage > 100) {
       return { ok: false, error: "Discount percentage is required and must be between 1 and 100." };
     }
-    const payload = { discount_percentage: discountPercentage };
+    const payload = {
+      discount_percentage: discountPercentage,
+      minimum_order_value: minimumOrderValue ?? 0,
+    };
     if (notes) payload.notes = notes;
     const data = await apiClient.post(
       `/admin/instagram-rewards/${rewardId}/approve`,

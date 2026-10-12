@@ -148,13 +148,13 @@ export default function InstagramRewards() {
         {/* Header */}
         <div className="mb-8">
           <p className="font-ui text-xs uppercase tracking-[.2em] text-accent mb-1 font-medium">
-            Instagram Customer Rewards
+            Loyalty Rewards
           </p>
           <EditorialHeading level={2} className="text-3xl md:text-4xl text-ink">
             Share & Earn
           </EditorialHeading>
           <p className="mt-2 font-ui text-sm text-taupe leading-relaxed max-w-2xl">
-            Style your Pratikshya Fashion sarees and outfits, post a photo or video on Instagram, tag us, and claim a personal reward discount coupon on your next order!
+            Style your Pratikshya Fashion sarees and outfits, share a photo or video, and claim a personal reward discount coupon on your next order!
           </p>
         </div>
 
@@ -175,15 +175,15 @@ export default function InstagramRewards() {
             </li>
             <li className="bg-white/90 p-3.5 border border-mist/60 rounded-xs flex gap-3">
               <span className="font-bold text-accent font-mono text-sm">3.</span>
-              <span className="text-taupe">Post your photo or video on Instagram.</span>
+              <span className="text-taupe">Post your photo or video on social media or share it with us.</span>
             </li>
             <li className="bg-white/90 p-3.5 border border-mist/60 rounded-xs flex gap-3">
               <span className="font-bold text-accent font-mono text-sm">4.</span>
-              <span className="text-taupe">Tag the official <strong>@pratikshyafashion</strong> Instagram account.</span>
+              <span className="text-taupe">Tag the official <strong>@pratikshyafashion</strong> account.</span>
             </li>
             <li className="bg-white/90 p-3.5 border border-mist/60 rounded-xs flex gap-3">
               <span className="font-bold text-accent font-mono text-sm">5.</span>
-              <span className="text-taupe">Submit your Instagram username and order information.</span>
+              <span className="text-taupe">Submit your handle and order information below.</span>
             </li>
             <li className="bg-white/90 p-3.5 border border-mist/60 rounded-xs flex gap-3">
               <span className="font-bold text-accent font-mono text-sm">6.</span>
@@ -264,7 +264,7 @@ export default function InstagramRewards() {
             {/* Instagram Username */}
             <div>
               <label className="block font-ui text-xs uppercase tracking-wider text-ink mb-1 font-medium">
-                Instagram Username *
+                Handle / Username *
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-taupe font-mono">
@@ -287,7 +287,7 @@ export default function InstagramRewards() {
             {/* Instagram Post URL */}
             <div>
               <label className="block font-ui text-xs uppercase tracking-wider text-ink mb-1 font-medium">
-                Instagram Post / Story Link (Optional)
+                Post / Story Link (Optional)
               </label>
               <input
                 type="url"

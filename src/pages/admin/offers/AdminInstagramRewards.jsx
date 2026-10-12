@@ -49,6 +49,9 @@ export default function AdminInstagramRewards() {
   const { hasPermission, isLoading: isAuthLoading } = useAdminAuth();
   const [rewards, setRewards] = useState([]);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_LIMIT = 20;
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +66,7 @@ export default function AdminInstagramRewards() {
   const [rejectReason, setRejectReason] = useState("");
   const [approveNotes, setApproveNotes] = useState("");
   const [approveDiscount, setApproveDiscount] = useState("");
+  const [approveMinOrder, setApproveMinOrder] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Manual claim modal state
@@ -89,14 +93,15 @@ export default function AdminInstagramRewards() {
     apiAdminListInstagramRewards({
       status: statusFilter,
       search: searchQuery,
-      page: 1,
-      limit: 100,
+      page: currentPage,
+      limit: PAGE_LIMIT,
     }).then((res) => {
       if (cancelled) return;
       setIsLoading(false);
       if (res.ok) {
         setRewards(res.items ?? []);
         setTotal(res.total ?? (res.items ?? []).length);
+        setTotalPages(res.totalPages ?? 1);
         setError(null);
       } else {
         setRewards([]);
@@ -106,7 +111,12 @@ export default function AdminInstagramRewards() {
     return () => {
       cancelled = true;
     };
-  }, [statusFilter, searchQuery, attempt]);
+  }, [statusFilter, searchQuery, currentPage, attempt]);
+
+  // Reset to page 1 when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchQuery]);
 
   // Counts for metric cards
   const pendingCount = useMemo(
@@ -136,6 +146,7 @@ export default function AdminInstagramRewards() {
     setSelectedReward(reward);
     setApproveNotes("");
     setApproveDiscount("");
+    setApproveMinOrder("");
     setIsApproveOpen(true);
   };
 
@@ -156,6 +167,7 @@ export default function AdminInstagramRewards() {
       selectedReward.id,
       approveNotes,
       approveDiscount !== "" ? parseFloat(approveDiscount) : undefined,
+      approveMinOrder !== "" ? parseFloat(approveMinOrder) : 0,
     );
     setIsProcessing(false);
     if (res.ok) {
@@ -455,6 +467,29 @@ export default function AdminInstagramRewards() {
             </table>
           </div>
         )}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-pearl text-xs text-slate">
+            <span>{total} total submissions</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 border border-pearl rounded disabled:opacity-40 hover:bg-ivory"
+              >
+                Previous
+              </button>
+              <span className="px-2">Page {currentPage} of {totalPages}</span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 border border-pearl rounded disabled:opacity-40 hover:bg-ivory"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </AdminPanel>
 
       {/* 3. Detail Drawer / Modal */}
@@ -686,7 +721,23 @@ export default function AdminInstagramRewards() {
             </div>
 
             <div className="mb-4">
-              <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+              <label className="block text-xs uppercase tracking-wider text-slate mb-1 font-semibold">
+                Min. Order Value (₹)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={approveMinOrder}
+                onChange={(e) => setApproveMinOrder(e.target.value)}
+                placeholder="0 (no minimum)"
+                className="w-full border border-pearl px-3 py-2 text-sm bg-white focus:outline-none focus:border-charcoal"
+              />
+              <p className="text-[11px] text-slate mt-1">Leave 0 for no minimum order requirement.</p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-xs uppercase tracking-wider text-slate mb-1">
                 Internal Notes (Optional)
               </label>
               <textarea
