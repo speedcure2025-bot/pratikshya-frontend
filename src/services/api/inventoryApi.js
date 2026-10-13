@@ -63,6 +63,31 @@ export async function apiGetStockItem(stockId) {
 }
 
 /**
+ * POST /admin/inventory/stock
+ * Body: { productId, sku, variantId?, warehouseId?, onHand?, lowThreshold? }
+ * Idempotent — returns existing record if one already exists for the combo.
+ */
+export async function apiCreateStock({
+  productId,
+  sku,
+  variantId,
+  warehouseId,
+  onHand = 0,
+  lowThreshold = 5,
+} = {}) {
+  try {
+    const data = await apiClient.post(
+      "/admin/inventory/stock",
+      { productId, sku, variantId, warehouseId, onHand, lowThreshold },
+      { scope: "admin" },
+    );
+    return { ok: true, item: data.item ?? data };
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+/**
  * POST /admin/inventory/stock/adjust
  * Body: { stockId, delta, type, reason? }
  */
