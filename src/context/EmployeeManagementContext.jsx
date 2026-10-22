@@ -76,22 +76,47 @@ export function EmployeeManagementProvider({ children }) {
   }, []);
   const [activity, setActivity] = useState(() => loadActivity());
   const [isWorking, setIsWorking] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
 
   // Sync staff list from backend. The server is authoritative — no seed.
   // Admin-workspace sessions ask for the full roster (ADMIN / SUPER_ADMIN
   // included).
-  useEffect(() => {
+  const fetchEmployees = useCallback(async () => {
     const scope = resolveAccountScope();
     if (!scope) return;
+    setIsFetching(true);
+    setFetchError(null);
+    const result = await apiAdminListEmployees({
+      pageSize: 100,
+      includeAdmins: scope === "admin",
+    }, scope);
+    setIsFetching(false);
+    if (result.ok) {
+      replaceServerEmployees(result.items ?? []);
+      setEmployees(result.items ?? []);
+    } else {
+      setFetchError(result.error ?? "Failed to load employees.");
+    }
+  }, [resolveAccountScope]);
+
+  useEffect(() => {
     let cancelled = false;
+    const scope = resolveAccountScope();
+    if (!scope) return;
+    setIsFetching(true);
+    setFetchError(null);
     apiAdminListEmployees({
       pageSize: 100,
       includeAdmins: scope === "admin",
     }, scope).then((result) => {
       if (cancelled) return;
+      setIsFetching(false);
       if (result.ok) {
         replaceServerEmployees(result.items ?? []);
         setEmployees(result.items ?? []);
+      } else {
+        setFetchError(result.error ?? "Failed to load employees.");
       }
     });
     return () => { cancelled = true; };
@@ -473,10 +498,13 @@ export function EmployeeManagementProvider({ children }) {
       employees,
       activity,
       isWorking,
+      isFetching,
+      fetchError,
       canManageEmployees,
       getEmployee,
       loadEmployee,
       getEmployees,
+      fetchEmployees,
       createEmployee,
       updateEmployee,
       updateOwnProfile,
@@ -494,10 +522,13 @@ export function EmployeeManagementProvider({ children }) {
       employees,
       activity,
       isWorking,
+      isFetching,
+      fetchError,
       canManageEmployees,
       getEmployee,
       loadEmployee,
       getEmployees,
+      fetchEmployees,
       createEmployee,
       updateEmployee,
       updateOwnProfile,
@@ -524,10 +555,13 @@ const inertManagement = {
   employees: [],
   activity: [],
   isWorking: false,
+  isFetching: false,
+  fetchError: null,
   canManageEmployees: false,
   getEmployee: () => null,
   loadEmployee: async () => null,
   getEmployees: () => [],
+  fetchEmployees: async () => {},
   createEmployee: async () => ({ ok: false }),
   updateEmployee: async () => ({ ok: false }),
   updateOwnProfile: async () => ({ ok: false }),

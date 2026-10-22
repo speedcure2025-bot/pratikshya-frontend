@@ -61,7 +61,7 @@ export default function ForgotPassword() {
 
   return (
     <main>
-      <AtelierSection rhythm="none" width="content" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+      <AtelierSection rhythm="none" width="content" className="pt-6 pb-16 md:pt-8 md:pb-20">
         <Breadcrumb
           items={[
             { label: "Atelier", to: "/" },

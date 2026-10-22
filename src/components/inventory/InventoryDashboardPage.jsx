@@ -1,13 +1,11 @@
 /**
- * DEFERRED IN ADMIN PORTAL (Admin consolidation 2026-09): the Admin
- * inventory suite runs on a browser-localStorage simulation while the
- * backend inventory ledger is an empty stub (blocker B-01), so the Admin
- * routes were removed and redirect to the dashboard. This component stays
- * LIVE for the Employee portal (portal="employee"), which is unchanged.
+ * PRATIKSHYA FASHION — Admin & Employee Inventory Dashboard.
+ * Now fetches stock records directly from the backend for the admin portal
+ * to avoid the InventoryContext timing issue (context mounts before admin login).
  */
 
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
@@ -15,6 +13,7 @@ import {
   CircleDollarSign,
   PackageCheck,
   PackageX,
+  RefreshCw,
   RotateCcw,
   ShieldAlert,
   Store,
@@ -35,7 +34,8 @@ import { formatINR } from "../../utils/shopping";
 import { formatEmployeeDateTime } from "../../utils/employee";
 import InventoryNav from "./InventoryNav";
 import InventoryStatusBadge from "./InventoryStatusBadge";
-import { LOCATION_TYPES, STOCK_STATUS } from "../../services/inventory/inventoryRepository";
+import { LOCATION_TYPES, STOCK_STATUS, calculateStockStatus } from "../../services/inventory/inventoryRepository";
+import { apiListStock } from "../../services/api/inventoryApi";
 
 const inputClass = "h-10 w-full border border-mist bg-canvas px-3 font-ui text-xs text-ink outline-none transition focus:border-accent focus:ring-1 focus:ring-accent/20";
 
@@ -67,8 +67,7 @@ export default function InventoryDashboardPage({ portal = "admin" }) {
   const { admin } = useAdminAuth();
   const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({
-    search: searchParams.get("search") || "",
-    category: "",
+    search: searchParams.get("search") || "",    category: "",
     subcategory: "",
     productType: "",
     locationId: "",
@@ -91,21 +90,90 @@ export default function InventoryDashboardPage({ portal = "admin" }) {
   const root = portal === "super-admin" ? "/super-admin/inventory" : portal === "admin" ? "/admin/inventory" : "/employee/inventory";
   const Page = portal === "employee" ? EmployeePage : AdminPage;
 
-  const rows = useMemo(() => inventory.query({
-    ...filters,
-    ...(availabilityOnly ? {
-      search: "",
-      locationId: "",
-      locationType: "",
-      department: "",
-      status: "",
-      hasAvailable: false,
-      hasReserved: false,
-      hasDamaged: false,
-      hasReturned: false,
-    } : {}),
-    locationType: employeeWarehouseOnly ? LOCATION_TYPES.WAREHOUSE : availabilityOnly ? "" : filters.locationType || "",
-  }), [inventory, filters, employeeWarehouseOnly, availabilityOnly]);
+  // ── Admin/Employee portal: fetch stock records directly from backend ──────
+  // The InventoryContext shared fetch fires before admin/employee login, so for
+  // these portals we fetch directly here where the token is guaranteed present.
+  const isAdminPortal = portal === "admin" || portal === "super-admin" || portal === "employee";
+  const [backendStockRows, setBackendStockRows] = useState(null);
+  const [stockLoading, setStockLoading] = useState(isAdminPortal);
+
+  const loadBackendStock = useCallback(async () => {
+    if (!isAdminPortal) return;
+    setStockLoading(true);
+    const apiPortal = portal === "employee" ? "employee" : "admin";
+    const result = await apiListStock({ pageSize: 500, portal: apiPortal });
+    if (result.ok) {
+      setBackendStockRows(
+        (result.items ?? []).map((item) => {
+          const onHand    = item.quantity_on_hand    ?? 0;
+          const reserved  = item.quantity_reserved   ?? 0;
+          const available = item.quantity_available  ?? Math.max(0, onHand - reserved);
+          const threshold = item.low_threshold       ?? 5;
+          return {
+            id:               `backend::${item.id}`,
+            backendId:        item.id,
+            productId:        item.product_id  ?? "",
+            variantId:        item.variant_id  ?? null,
+            sku:              item.sku ?? "—",
+            locationId:       item.warehouse_id ?? "loc-main-store",
+            productName:      item.product_name ?? item.sku ?? item.product_id ?? "—",
+            variantLabel:     "",
+            category:         "",
+            subcategory:      "",
+            productType:      "",
+            placement:        { department: "" },
+            placementLabel:   "",
+            location: {
+              id:   item.warehouse_id ?? "loc-main-store",
+              name: item.warehouse_id ? "Main Warehouse" : "Main Store",
+              type: item.warehouse_id ? LOCATION_TYPES.WAREHOUSE : LOCATION_TYPES.STORE,
+            },
+            product:          null,
+            estimatedValue:   0,
+            quantity:         { onHand, available, reserved, sold: 0, returned: 0, damaged: 0 },
+            lowStockThreshold: threshold,
+            maximumStock:     null,
+            active:           true,
+            status:           calculateStockStatus({ available, lowStockThreshold: threshold }),
+            createdAt:        item.created_at ?? null,
+            updatedAt:        item.updated_at ?? null,
+            lastMovementAt:   null,
+          };
+        })
+      );
+    }
+    setStockLoading(false);
+  }, [isAdminPortal]);
+
+  useEffect(() => { loadBackendStock(); }, [loadBackendStock]);
+
+  // For admin portals use the direct backend rows; for employee use in-memory query
+  const rows = useMemo(() => {
+    if (isAdminPortal) {
+      const source = backendStockRows ?? inventory.records;
+      const term = filters.search.trim().toLowerCase();
+      return source.filter((row) => {
+        if (!term) return true;
+        const haystack = [row.productName, row.sku, row.variantLabel, row.category]
+          .join(" ").toLowerCase();
+        return haystack.includes(term);
+      }).filter((row) =>
+        (!filters.status || row.status === filters.status) &&
+        (!filters.locationId || row.locationId === filters.locationId) &&
+        (!filters.hasAvailable || row.quantity.available > 0) &&
+        (!filters.hasReserved  || row.quantity.reserved  > 0) &&
+        (!filters.hasDamaged   || row.quantity.damaged   > 0)
+      );
+    }
+    return inventory.query({
+      ...filters,
+      ...(availabilityOnly ? {
+        search: "", locationId: "", locationType: "", department: "",
+        status: "", hasAvailable: false, hasReserved: false, hasDamaged: false, hasReturned: false,
+      } : {}),
+      locationType: employeeWarehouseOnly ? LOCATION_TYPES.WAREHOUSE : availabilityOnly ? "" : filters.locationType || "",
+    });
+  }, [isAdminPortal, backendStockRows, inventory, filters, employeeWarehouseOnly, availabilityOnly]);
   const availabilityRows = useMemo(() => {
     if (!availabilityOnly) return rows;
     const unique = new Map();
@@ -125,23 +193,26 @@ export default function InventoryDashboardPage({ portal = "admin" }) {
     });
   }, [availabilityOnly, rows, inventory, filters.search, filters.status]);
   const metrics = useMemo(() => {
-    if (!employeeWarehouseOnly) return inventory.metrics;
+    // For admin portals, compute metrics directly from backend rows so they
+    // reflect real DB state rather than the in-memory session store.
+    const source = isAdminPortal ? (backendStockRows ?? inventory.records) : rows;
+    if (!employeeWarehouseOnly && !isAdminPortal) return inventory.metrics;
     return {
       ...inventory.metrics,
-      totalUnits: rows.reduce((sum, row) => sum + row.quantity.onHand, 0),
-      availableUnits: rows.reduce((sum, row) => sum + row.quantity.available, 0),
-      reservedUnits: rows.reduce((sum, row) => sum + row.quantity.reserved, 0),
-      damagedUnits: rows.reduce((sum, row) => sum + row.quantity.damaged, 0),
-      returnedUnits: rows.reduce((sum, row) => sum + row.quantity.returned, 0),
-      estimatedValue: rows.reduce((sum, row) => sum + row.estimatedValue, 0),
-      storeStock: 0,
-      warehouseStock: rows.reduce((sum, row) => sum + row.quantity.onHand, 0),
-      totalProducts: new Set(rows.map((row) => row.productId)).size,
-      totalVariants: new Set(rows.map((row) => row.variantId).filter(Boolean)).size,
-      lowStock: rows.filter((row) => row.status === STOCK_STATUS.LOW_STOCK).length,
-      outOfStock: rows.filter((row) => row.status === STOCK_STATUS.OUT_OF_STOCK).length,
+      totalUnits:     source.reduce((sum, row) => sum + (row.quantity?.onHand    ?? 0), 0),
+      availableUnits: source.reduce((sum, row) => sum + (row.quantity?.available ?? 0), 0),
+      reservedUnits:  source.reduce((sum, row) => sum + (row.quantity?.reserved  ?? 0), 0),
+      damagedUnits:   source.reduce((sum, row) => sum + (row.quantity?.damaged   ?? 0), 0),
+      returnedUnits:  source.reduce((sum, row) => sum + (row.quantity?.returned  ?? 0), 0),
+      estimatedValue: source.reduce((sum, row) => sum + (row.estimatedValue ?? 0), 0),
+      storeStock:     source.filter((row) => row.location?.type === LOCATION_TYPES.STORE).reduce((sum, row) => sum + (row.quantity?.onHand ?? 0), 0),
+      warehouseStock: source.filter((row) => row.location?.type === LOCATION_TYPES.WAREHOUSE).reduce((sum, row) => sum + (row.quantity?.onHand ?? 0), 0),
+      totalProducts:  new Set(source.map((row) => row.productId)).size,
+      totalVariants:  new Set(source.map((row) => row.variantId).filter(Boolean)).size,
+      lowStock:       source.filter((row) => row.status === STOCK_STATUS.LOW_STOCK).length,
+      outOfStock:     source.filter((row) => row.status === STOCK_STATUS.OUT_OF_STOCK).length,
     };
-  }, [inventory.metrics, rows, employeeWarehouseOnly]);
+  }, [isAdminPortal, backendStockRows, inventory.metrics, inventory.records, rows, employeeWarehouseOnly]);
 
   const can = (permission) => portal !== "employee" || hasPermission(permission);
   const filterSourceRows = employeeWarehouseOnly
@@ -214,6 +285,11 @@ export default function InventoryDashboardPage({ portal = "admin" }) {
           : "One stock ledger across the Main Store and Main Warehouse, connected to the existing catalogue and variants."}
       actions={
         <>
+          {isAdminPortal && (
+            <AtelierButton variant="outline" size="chip" onClick={loadBackendStock} aria-label="Refresh stock">
+              <RefreshCw size={11} /> Refresh
+            </AtelierButton>
+          )}
           {can(PERMISSIONS.INVENTORY_RECEIVE) ? (
             <AtelierButton as={Link} to={`${root}/receive`} size="chip">Receive stock</AtelierButton>
           ) : null}
@@ -365,6 +441,8 @@ export default function InventoryDashboardPage({ portal = "admin" }) {
               { id: "guidance", label: "Customer guidance", render: (row) => row.customerAvailability.available <= 0 ? "Currently unavailable" : row.customerAvailability.status === STOCK_STATUS.LOW_STOCK ? "Only a few left" : "In stock" },
             ]}
           />
+        ) : stockLoading ? (
+          <p role="status" aria-busy="true" className="px-4 py-8 font-ui text-sm text-taupe">Loading stock…</p>
         ) : (
         <DataTable
           className="border-0"
@@ -383,12 +461,12 @@ export default function InventoryDashboardPage({ portal = "admin" }) {
               ),
             },
             { id: "location", label: "Location", render: (row) => <div><p>{row.location?.name || "—"}</p><p className="mt-0.5 max-w-48 text-[10px] text-taupe">{row.placementLabel || "Placement not assigned"}</p></div> },
-            { id: "onHand", label: "On hand", render: (row) => row.quantity.onHand },
-            { id: "available", label: "Available", render: (row) => <strong>{row.quantity.available}</strong> },
-            { id: "reserved", label: "Reserved", render: (row) => row.quantity.reserved },
-            { id: "sold", label: "Sold", render: (row) => row.quantity.sold },
-            { id: "returned", label: "Returned", render: (row) => row.quantity.returned },
-            { id: "damaged", label: "Damaged", render: (row) => row.quantity.damaged },
+            { id: "onHand", label: "On hand", render: (row) => row.quantity?.onHand ?? 0 },
+            { id: "available", label: "Available", render: (row) => <strong>{row.quantity?.available ?? 0}</strong> },
+            { id: "reserved", label: "Reserved", render: (row) => row.quantity?.reserved ?? 0 },
+            { id: "sold", label: "Sold", render: (row) => row.quantity?.sold ?? 0 },
+            { id: "returned", label: "Returned", render: (row) => row.quantity?.returned ?? 0 },
+            { id: "damaged", label: "Damaged", render: (row) => row.quantity?.damaged ?? 0 },
             { id: "threshold", label: "Threshold", render: (row) => row.lowStockThreshold },
             { id: "status", label: "Status", render: (row) => <InventoryStatusBadge status={row.status} /> },
             { id: "updated", label: "Last updated", render: (row) => <span className="whitespace-nowrap text-[11px] text-taupe">{formatEmployeeDateTime(row.updatedAt)}</span> },

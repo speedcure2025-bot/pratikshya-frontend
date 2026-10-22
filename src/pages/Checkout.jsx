@@ -59,7 +59,7 @@ export default function Checkout() {
   if (cart.items.length === 0) {
     return (
       <main>
-        <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
           <Breadcrumb
             items={[{ label: "Bag", to: "/cart" }, { label: "Checkout" }]}
             className="mb-4"

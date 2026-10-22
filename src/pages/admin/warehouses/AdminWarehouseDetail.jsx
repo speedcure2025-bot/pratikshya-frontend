@@ -31,7 +31,7 @@ import AdminPage from "../../../components/admin/AdminPage";
 import AdminPanel from "../../../components/admin/AdminPanel";
 import { useAdminAuth } from "../../../context/AdminAuthContext";
 import {
-  apiListWarehouses,
+  apiGetWarehouse,
   apiListStock,
   apiUpdateWarehouse,
 } from "../../../services/api/inventoryApi";
@@ -169,18 +169,13 @@ export default function AdminWarehouseDetail() {
   const loadWarehouse = useCallback(async () => {
     setWhLoading(true);
     setWhError(null);
-    const result = await apiListWarehouses({ includeInactive: true, pageSize: 200 });
+    const result = await apiGetWarehouse(warehouseId);
     setWhLoading(false);
     if (!result.ok) {
       setWhError(result.error ?? "Failed to load warehouse.");
       return;
     }
-    const wh = (result.warehouses ?? []).find((w) => String(w.id) === String(warehouseId));
-    if (!wh) {
-      setWhError("Warehouse not found.");
-      return;
-    }
-    setWarehouse(wh);
+    setWarehouse(result.warehouse);
   }, [warehouseId]);
 
   // ---------------------------------------------------------------------------
@@ -237,12 +232,12 @@ export default function AdminWarehouseDetail() {
 
   const totalPages = Math.max(1, Math.ceil(stockTotal / PAGE_SIZE));
 
-  // Aggregate on-hand count across loaded items (for tile — best-effort)
-  const totalOnHand = stockItems.reduce((sum, s) => sum + (s.on_hand ?? s.quantity ?? 0), 0);
-  const totalAvailable = stockItems.reduce((sum, s) => sum + (s.available ?? 0), 0);
+  // Aggregate totals using the correct backend field names.
+  const totalOnHand  = stockItems.reduce((sum, s) => sum + (s.quantity_on_hand   ?? s.on_hand   ?? 0), 0);
+  const totalAvailable = stockItems.reduce((sum, s) => sum + (s.quantity_available ?? s.available ?? 0), 0);
   const lowStockCount = stockItems.filter(
-    (s) => s.low_stock_threshold != null &&
-      (s.available ?? 0) <= (s.low_stock_threshold ?? 0),
+    (s) => s.low_threshold != null &&
+      (s.quantity_available ?? s.available ?? 0) <= (s.low_threshold ?? 0),
   ).length;
 
   // ---------------------------------------------------------------------------
@@ -462,10 +457,10 @@ export default function AdminWarehouseDetail() {
                 </thead>
                 <tbody>
                   {stockItems.map((item) => {
-                    const onHand    = item.on_hand    ?? item.quantity  ?? 0;
-                    const reserved  = item.reserved   ?? 0;
-                    const available = item.available  ?? (onHand - reserved);
-                    const threshold = item.low_stock_threshold ?? null;
+                    const onHand    = item.quantity_on_hand   ?? item.on_hand   ?? 0;
+                    const reserved  = item.quantity_reserved  ?? item.reserved  ?? 0;
+                    const available = item.quantity_available ?? item.available ?? (onHand - reserved);
+                    const threshold = item.low_threshold ?? null;
 
                     return (
                       <tr
@@ -503,10 +498,10 @@ export default function AdminWarehouseDetail() {
             {/* Mobile cards */}
             <div className="grid gap-3 p-3 md:hidden">
               {stockItems.map((item) => {
-                const onHand    = item.on_hand    ?? item.quantity  ?? 0;
-                const reserved  = item.reserved   ?? 0;
-                const available = item.available  ?? (onHand - reserved);
-                const threshold = item.low_stock_threshold ?? null;
+                const onHand    = item.quantity_on_hand   ?? item.on_hand   ?? 0;
+                const reserved  = item.quantity_reserved  ?? item.reserved  ?? 0;
+                const available = item.quantity_available ?? item.available ?? (onHand - reserved);
+                const threshold = item.low_threshold ?? null;
 
                 return (
                   <div key={item.id ?? item.sku} className="border border-mist/70 bg-canvas p-4">

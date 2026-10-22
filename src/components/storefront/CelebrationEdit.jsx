@@ -123,7 +123,7 @@ export default function CelebrationEdit({ excludeIds = null }) {
   const editRoute = (edit) => resolveCategoryRoute(edit.categoryId)?.href ?? "/shop";
 
   return (
-    <AtelierSection id="bridal" rhythm="none" width="wide" className="py-20 md:py-28">
+    <AtelierSection id="bridal" rhythm="none" width="wide" className="py-12 md:py-16">
       <header className="mb-9 md:mb-10">
         <p className={cn(eyebrow.section, "text-accent mb-3")}>The PRATIKSHYA Edit</p>
         <h2 className="font-display text-[2.4rem] leading-[.95] font-light tracking-tight md:text-5xl">

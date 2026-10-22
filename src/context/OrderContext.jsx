@@ -385,9 +385,9 @@ export function OrderProvider({ children }) {
       actor:  options.actor  || { name: order.customer?.fullName || "Customer" },
     });
     if (!result.ok) return { ok: false, message: result.message || "This order can no longer be cancelled." };
-    if (result.order.inventoryReservationId) {
-      inventoryRepository.restockCancelledOrder(result.order, { label: result.order.customer?.fullName || "Customer" });
-    }
+    // Note: stock restock is handled by the backend's _release_stock_reservation.
+    // The in-memory inventoryRepository.restockCancelledOrder is session-only and
+    // does not persist — omitted to avoid stale in-memory state.
     return applyResult(result);
   }, [user?.id, customerId, applyResult]);
 

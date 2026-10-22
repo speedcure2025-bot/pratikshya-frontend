@@ -77,6 +77,7 @@ const EmployeeAssistedOrder = lazy(() => import("./pages/employee/EmployeeAssist
 const EmployeeOffers = lazy(() => import("./pages/employee/EmployeeOffers"));
 const EmployeeOfferForm = lazy(() => import("./pages/employee/EmployeeOfferForm"));
 const EmployeeOfferDetail = lazy(() => import("./pages/employee/EmployeeOfferDetail"));
+const EmployeeLoyaltyRewards = lazy(() => import("./pages/employee/EmployeeLoyaltyRewards"));
 const EmployeeAccessDenied = lazy(() => import("./pages/employee/EmployeeAccessDenied"));
 const EmployeeDesk = lazy(() => import("./pages/employee/EmployeeDesk"));
 const EmployeeReports = lazy(() => import("./pages/employee/EmployeeReports"));
@@ -415,6 +416,7 @@ export default function App() {
                           <Route path="/employee/offers/new" element={<EmployeeOfferForm />} />
                           <Route path="/employee/offers/:offerId/edit" element={<EmployeeOfferForm />} />
                           <Route path="/employee/offers/:offerId" element={<EmployeeOfferDetail />} />
+                          <Route path="/employee/loyalty-rewards" element={<EmployeeLoyaltyRewards />} />
                           <Route path="/employee/inventory" element={<InventoryDashboardPage portal="employee" />} />
                           <Route path="/employee/inventory/movements" element={<InventoryMovementsPage portal="employee" />} />
                           <Route path="/employee/inventory/transfers" element={<InventoryTransfersPage portal="employee" />} />

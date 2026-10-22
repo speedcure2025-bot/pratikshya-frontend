@@ -55,7 +55,7 @@ export default function Cart() {
   if (cart.error && cart.items.length === 0) {
     return (
       <main>
-        <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
           <Breadcrumb items={[{ label: "Shop", to: "/shop" }, { label: "Bag" }]} className="mb-4" />
           <div
             role="alert"
@@ -84,7 +84,7 @@ export default function Cart() {
   if (cart.isLoading && cart.items.length === 0) {
     return (
       <main>
-        <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
           <Breadcrumb items={[{ label: "Shop", to: "/shop" }, { label: "Bag" }]} className="mb-4" />
           <div role="status" aria-busy="true" className="max-w-xl">
             <p className="font-display text-2xl font-light tracking-tight text-ink">
@@ -104,7 +104,7 @@ export default function Cart() {
   if (isEmpty) {
     return (
       <main>
-        <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
           <Breadcrumb items={[{ label: "Shop", to: "/shop" }, { label: "Bag" }]} className="mb-4" />
           <EmptyState
             eyebrow="Your Bag"
@@ -128,7 +128,7 @@ export default function Cart() {
 
   return (
     <main className="pb-24 md:pb-0">
-      <AtelierSection rhythm="none" width="wide" className="pb-20 pt-28 sm:pt-32 md:pb-28">
+      <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
         <Breadcrumb items={[{ label: "Shop", to: "/shop" }, { label: "Bag" }]} className="mb-8 md:mb-10" />
 
         <EditorialHeading

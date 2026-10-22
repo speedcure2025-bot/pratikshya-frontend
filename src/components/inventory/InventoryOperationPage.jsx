@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, ArrowRight, CheckCircle2 } from "lucide-react";
 import AdminPage from "../admin/AdminPage";
@@ -12,6 +12,7 @@ import { useEmployeeAuth } from "../../context/EmployeeAuthContext";
 import { ROLES } from "../../config/employeeRoles";
 import catalogRepository from "../../services/catalogRepository";
 import { LOCATION_TYPES } from "../../services/inventory/inventoryRepository";
+import { apiListWarehouses, apiListStock, apiAdjustStock } from "../../services/api/inventoryApi";
 
 const fieldClass = "mt-2 h-11 w-full border border-mist bg-canvas px-3 font-ui text-sm text-ink outline-none transition focus:border-accent focus:ring-1 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-50";
 const labelClass = "font-ui text-[10px] uppercase tracking-[.15em] text-taupe";
@@ -38,36 +39,92 @@ export default function InventoryOperationPage({ portal = "admin", operation = "
     reference: "",
     reason: operation === "adjust" ? "Counting Correction" : "",
     notes: "",
-    department: prefilledRecord?.placement.department || "",
-    section: prefilledRecord?.placement.section || "",
-    zone: prefilledRecord?.placement.zone || "",
-    rack: prefilledRecord?.placement.rack || "",
-    shelf: prefilledRecord?.placement.shelf || "",
-    bin: prefilledRecord?.placement.bin || "",
+    department: prefilledRecord?.placement?.department || "",
+    section: prefilledRecord?.placement?.section || "",
+    zone: prefilledRecord?.placement?.zone || "",
+    rack: prefilledRecord?.placement?.rack || "",
+    shelf: prefilledRecord?.placement?.shelf || "",
+    bin: prefilledRecord?.placement?.bin || "",
     adjustType: "ADJUST",
   });
   const [productSearch, setProductSearch] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [confirming, setConfirming] = useState(false);
 
+  // Load real warehouses from the backend for the location dropdown.
+  const [warehouses, setWarehouses] = useState([]);
+  useEffect(() => {
+    apiListWarehouses({ pageSize: 200 }).then((result) => {
+      if (result.ok) setWarehouses(result.warehouses ?? []);
+    });
+  }, []);
+
+  // Load backend stock records directly so backendId lookup is always available
+  // even when the InventoryContext shared fetch hasn't completed yet.
+  const [directBackendRecords, setDirectBackendRecords] = useState([]);
+  useEffect(() => {
+    const apiPortal = portal === "employee" ? "employee" : "admin";
+    apiListStock({ pageSize: 500, portal: apiPortal }).then((result) => {
+      if (result.ok) setDirectBackendRecords(result.items ?? []);
+    });
+  }, [portal]);
+
   const Page = portal === "employee" ? EmployeePage : AdminPage;
   const root = portal === "super-admin" ? "/super-admin/inventory" : portal === "admin" ? "/admin/inventory" : "/employee/inventory";
   const actor = actorFor(portal, admin, employee);
   const warehouseOnly = portal === "employee" && employee?.role === ROLES.WAREHOUSE_STAFF;
-  const locations = inventory.locations.filter((location) =>
-    location.status === "ACTIVE" && (!warehouseOnly || location.type === LOCATION_TYPES.WAREHOUSE)
-  );
+
+  // Use backend warehouses when available, fall back to in-memory locations.
+  const locations = useMemo(() => {
+    const base = warehouses.length
+      ? warehouses
+          .filter((wh) => wh.is_active)
+          .map((wh) => ({ id: wh.id, name: wh.name, type: wh.type ?? "WAREHOUSE", status: "ACTIVE" }))
+      : inventory.locations;
+    return base.filter((loc) =>
+      loc.status === "ACTIVE" && (!warehouseOnly || loc.type === LOCATION_TYPES.WAREHOUSE)
+    );
+  }, [warehouses, inventory.locations, warehouseOnly]);
   const products = useMemo(() => catalogRepository.all().filter((product) =>
     product.status !== "ARCHIVED" && (!productSearch.trim() || [product.name, product.sku, product.category]
       .join(" ").toLowerCase().includes(productSearch.trim().toLowerCase()))
   ), [productSearch]);
   const product = catalogRepository.find(form.productId);
   const variants = product?.variants?.filter((variant) => variant.status !== "INACTIVE") || [];
-  const selectedRow = inventory.records.find((row) =>
-    row.productId === form.productId &&
-    row.locationId === form.locationId &&
-    String(row.variantId || "") === String(form.variantId || "")
-  );
+
+  // Find the matching stock row — prefer direct backend records, fall back to context
+  const selectedRow = useMemo(() => {
+    // First try direct backend records
+    const backendMatch = directBackendRecords.find((r) =>
+      r.product_id === form.productId &&
+      String(r.variant_id ?? "") === String(form.variantId ?? "") &&
+      (form.locationId ? r.warehouse_id === form.locationId : !r.warehouse_id)
+    );
+    if (backendMatch) {
+      return {
+        id: `backend::${backendMatch.id}`,
+        backendId: backendMatch.id,
+        productId: backendMatch.product_id,
+        variantId: backendMatch.variant_id,
+        locationId: backendMatch.warehouse_id ?? "loc-main-store",
+        quantity: {
+          onHand:    backendMatch.quantity_on_hand    ?? 0,
+          available: backendMatch.quantity_available  ?? 0,
+          reserved:  backendMatch.quantity_reserved   ?? 0,
+          damaged:   0,
+          returned:  0,
+        },
+        lowStockThreshold: backendMatch.low_threshold ?? 5,
+        placement: { department: "" },
+      };
+    }
+    // Fall back to context records (employee portal uses in-memory)
+    return inventory.records.find((row) =>
+      row.productId === form.productId &&
+      row.locationId === form.locationId &&
+      String(row.variantId || "") === String(form.variantId || "")
+    );
+  }, [directBackendRecords, inventory.records, form.productId, form.variantId, form.locationId]);
   const current = selectedRow?.quantity || { onHand: 0, available: 0, reserved: 0, damaged: 0, returned: 0 };
   const adjustment = Number(form.adjustment) || 0;
   const requiresVariant = variants.length > 0 && !(selectedRow && !selectedRow.variantId);
@@ -84,39 +141,63 @@ export default function InventoryOperationPage({ portal = "admin", operation = "
 
   const patch = (partial) => setForm((currentForm) => ({ ...currentForm, ...partial }));
 
-  const submit = () => {
-    const common = {
-      productId: form.productId,
-      variantId: form.variantId || null,
-      locationId: form.locationId,
-      reference: form.reference,
-      reason: form.reason,
-      notes: form.notes,
-      placement: isReceive ? {
-        department: form.department,
-        section: form.section,
-        zone: form.zone,
-        rack: form.rack,
-        shelf: form.shelf,
-        bin: form.bin,
-      } : null,
-      actor,
-    };
+  const submit = async () => {
+    const backendId = selectedRow?.backendId;
     let result;
-    if (isReceive) {
-      result = inventory.receiveStock({ ...common, quantity: form.quantity, supplier: form.supplier });
-    } else if (form.adjustType === "ADJUST") {
-      result = inventory.adjustStock({ ...common, adjustment: form.adjustment });
-    } else if (form.adjustType === "DAMAGE") {
-      result = inventory.markDamaged({ ...common, quantity: form.quantity });
-    } else if (form.adjustType === "RETURN") {
-      result = inventory.returnStock({ ...common, quantity: form.quantity });
+
+    if (backendId) {
+      // Direct backend call — bypasses InventoryContext timing dependency
+      const apiPortal = portal === "employee" ? "employee" : "admin";
+      if (isReceive) {
+        const qty = Math.max(0, Math.floor(Number(form.quantity) || 0));
+        result = await apiAdjustStock({
+          stockId: backendId, delta: qty, type: "RECEIVE",
+          reason: form.supplier ? `Received from ${form.supplier}` : (form.reason || "Stock received"),
+          portal: apiPortal,
+        });
+      } else if (form.adjustType === "ADJUST") {
+        const delta = Math.trunc(Number(form.adjustment) || 0);
+        result = await apiAdjustStock({ stockId: backendId, delta, type: "ADJUST", reason: form.reason || "System Correction", portal: apiPortal });
+      } else if (form.adjustType === "DAMAGE") {
+        const qty = Math.max(0, Math.floor(Number(form.quantity) || 0));
+        result = await apiAdjustStock({ stockId: backendId, delta: -qty, type: "DAMAGE", reason: form.reason || "Stock marked damaged", portal: apiPortal });
+      } else if (form.adjustType === "RETURN") {
+        const qty = Math.max(0, Math.floor(Number(form.quantity) || 0));
+        result = await apiAdjustStock({ stockId: backendId, delta: qty, type: "RETURN", reason: form.reason || "Customer return", portal: apiPortal });
+      } else {
+        // INSPECT operations — fall back to context
+        const common = { productId: form.productId, variantId: form.variantId || null, locationId: form.locationId, reference: form.reference, reason: form.reason, notes: form.notes, actor };
+        result = await inventory.inspectReturnedStock({ ...common, quantity: form.quantity, condition: form.adjustType === "INSPECT_DAMAGED" ? "DAMAGED" : "SELLABLE" });
+      }
+      // Refresh direct backend records after mutation
+      if (result?.ok) {
+        const apiPortalR = portal === "employee" ? "employee" : "admin";
+        apiListStock({ pageSize: 500, portal: apiPortalR }).then((r) => { if (r.ok) setDirectBackendRecords(r.items ?? []); });
+        inventory.refresh();
+      }
     } else {
-      result = inventory.inspectReturnedStock({
-        ...common,
-        quantity: form.quantity,
-        condition: form.adjustType === "INSPECT_DAMAGED" ? "DAMAGED" : "SELLABLE",
-      });
+      // No backend record yet — fall back to InventoryContext (employee in-memory / fallback)
+      const common = {
+        productId: form.productId,
+        variantId: form.variantId || null,
+        locationId: form.locationId,
+        reference: form.reference,
+        reason: form.reason,
+        notes: form.notes,
+        placement: isReceive ? { department: form.department, section: form.section, zone: form.zone, rack: form.rack, shelf: form.shelf, bin: form.bin } : null,
+        actor,
+      };
+      if (isReceive) {
+        result = await inventory.receiveStock({ ...common, quantity: form.quantity, supplier: form.supplier });
+      } else if (form.adjustType === "ADJUST") {
+        result = await inventory.adjustStock({ ...common, adjustment: form.adjustment });
+      } else if (form.adjustType === "DAMAGE") {
+        result = await inventory.markDamaged({ ...common, quantity: form.quantity });
+      } else if (form.adjustType === "RETURN") {
+        result = await inventory.returnStock({ ...common, quantity: form.quantity });
+      } else {
+        result = await inventory.inspectReturnedStock({ ...common, quantity: form.quantity, condition: form.adjustType === "INSPECT_DAMAGED" ? "DAMAGED" : "SELLABLE" });
+      }
     }
 
     setConfirming(false);

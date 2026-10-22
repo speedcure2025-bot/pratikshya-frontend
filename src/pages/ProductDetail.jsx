@@ -157,7 +157,7 @@ export default function ProductDetail() {
   if (status === "loading") {
     return (
       <main className="pb-20 md:pb-0">
-        <AtelierSection rhythm="none" width="wide" className="pb-16 pt-28 sm:pt-32 md:pb-24">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-12 md:pt-8 md:pb-16">
           <div className="grid gap-11 md:grid-cols-2 md:gap-7 lg:grid-cols-12 lg:gap-12 xl:gap-16">
             <div className="min-w-0 lg:col-span-7"><ProductGridSkeleton count={2} /></div>
             <div className="min-w-0 lg:col-span-5"><ProductGridSkeleton count={4} /></div>
@@ -202,7 +202,7 @@ export default function ProductDetail() {
           Atelier preview — this piece is not yet visible to customers
         </div>
       ) : null}
-      <AtelierSection rhythm="none" width="wide" className="pb-16 pt-28 sm:pt-32 md:pb-24">
+      <AtelierSection rhythm="none" width="wide" className="pt-6 pb-12 md:pt-8 md:pb-16">
         <Breadcrumb items={breadcrumbs} separator="/" className="mb-8 md:mb-10" />
 
         <div className="grid gap-11 md:grid-cols-2 md:gap-7 lg:grid-cols-12 lg:gap-12 xl:gap-16">

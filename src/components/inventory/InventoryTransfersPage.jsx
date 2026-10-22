@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Truck } from "lucide-react";
 import AdminPage from "../admin/AdminPage";
@@ -15,6 +15,7 @@ import { PERMISSIONS } from "../../config/employeePermissions";
 import { ROLES } from "../../config/employeeRoles";
 import catalogRepository from "../../services/catalogRepository";
 import { TRANSFER_STATES } from "../../services/inventory/inventoryRepository";
+import { apiListWarehouses } from "../../services/api/inventoryApi";
 import { formatEmployeeDateTime } from "../../utils/employee";
 
 const fieldClass = "mt-2 h-11 w-full border border-mist bg-canvas px-3 font-ui text-sm text-ink outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 disabled:opacity-50";
@@ -25,9 +26,31 @@ export default function InventoryTransfersPage({ portal = "admin" }) {
   const { admin } = useAdminAuth();
   const { employee, hasPermission } = useEmployeeAuth();
   const [searchParams] = useSearchParams();
+
+  // Load real warehouses from the backend for the source/destination dropdowns.
+  const [warehouses, setWarehouses] = useState([]);
+  useEffect(() => {
+    apiListWarehouses({ pageSize: 200 }).then((result) => {
+      if (result.ok) setWarehouses(result.warehouses ?? []);
+    });
+  }, []);
+
+  // Merge backend warehouses into the location list used for dropdowns.
+  // In-memory locations (from inventoryRepository) are used as fallback when
+  // the backend returns nothing.
+  const locations = useMemo(() => {
+    if (warehouses.length) {
+      return warehouses
+        .filter((wh) => wh.is_active)
+        .map((wh) => ({ id: wh.id, name: wh.name, type: wh.type ?? "WAREHOUSE", status: "ACTIVE" }));
+    }
+    return inventory.locations;
+  }, [warehouses, inventory.locations]);
+
   const prefilled = inventory.records.find((row) => row.id === searchParams.get("inventoryId"));
+  const fromWarehouseId = searchParams.get("fromWarehouseId") || "";
   const [form, setForm] = useState({
-    sourceLocationId: prefilled?.locationId || "",
+    sourceLocationId: prefilled?.locationId || fromWarehouseId || "",
     destinationLocationId: "",
     productId: prefilled?.productId || "",
     variantId: prefilled?.variantId || "",
@@ -71,25 +94,32 @@ export default function InventoryTransfersPage({ portal = "admin" }) {
         .some((location) => location?.type === "WAREHOUSE"))
     : inventory.transfers;
   const transferTouchesWarehouse = [form.sourceLocationId, form.destinationLocationId].some((id) =>
-    inventory.locations.find((location) => location.id === id)?.type === "WAREHOUSE"
+    locations.find((location) => location.id === id)?.type === "WAREHOUSE"
   );
   const ready = form.sourceLocationId && form.destinationLocationId && form.productId && (!requiresVariant || form.variantId) && quantity > 0 &&
     quantity <= requestableAtSource && form.sourceLocationId !== form.destinationLocationId &&
     (!warehouseStaff || transferTouchesWarehouse);
 
-  const create = (draft = false) => {
+  const create = async (draft = false) => {
     if (!ready) return;
-    const result = inventory.createTransfer({ ...form, quantity, variantId: form.variantId || null, actor, draft });
+    const result = await inventory.createTransfer({
+      ...form,
+      quantity,
+      variantId: form.variantId || null,
+      actor,
+      draft,
+    });
     if (!result.ok) {
       setFeedback({ kind: "error", message: result.error });
       return;
     }
-    setFeedback({ kind: "success", message: `${result.transfer.id} ${draft ? "saved as draft" : "requested"}. Destination stock will update only after receipt.` });
+    const refId = result.transfer?.id ?? result.transfer?.transfer_number ?? "Transfer";
+    setFeedback({ kind: "success", message: `${refId} ${draft ? "saved as draft" : "requested"}. Destination stock will update only after receipt.` });
     setForm((current) => ({ ...current, quantity: "", notes: "" }));
   };
 
-  const progress = (transfer, status) => {
-    const result = inventory.transitionTransfer(transfer.id, status, actor);
+  const progress = async (transfer, status) => {
+    const result = await inventory.transitionTransfer(transfer.id, status, actor);
     setFeedback(result.ok
       ? { kind: "success", message: `${transfer.id} moved to ${status.replaceAll("_", " ").toLowerCase()}.` }
       : { kind: "error", message: result.error });
@@ -127,14 +157,14 @@ export default function InventoryTransfersPage({ portal = "admin" }) {
                 Source <span className="text-accent">*</span>
                 <select required className={fieldClass} value={form.sourceLocationId} onChange={(event) => setForm((current) => ({ ...current, sourceLocationId: event.target.value }))}>
                   <option value="">Select source</option>
-                  {inventory.locations.map((location) => <option key={location.id} value={location.id}>{location.name} · {location.type}</option>)}
+                  {locations.map((location) => <option key={location.id} value={location.id}>{location.name} · {location.type}</option>)}
                 </select>
               </label>
               <label className={labelClass}>
                 Destination <span className="text-accent">*</span>
                 <select required className={fieldClass} value={form.destinationLocationId} onChange={(event) => setForm((current) => ({ ...current, destinationLocationId: event.target.value }))}>
                   <option value="">Select destination</option>
-                  {inventory.locations.map((location) => <option key={location.id} value={location.id}>{location.name} · {location.type}</option>)}
+                  {locations.map((location) => <option key={location.id} value={location.id}>{location.name} · {location.type}</option>)}
                 </select>
               </label>
               <label className={`${labelClass} sm:col-span-2 xl:col-span-1 2xl:col-span-2`}>

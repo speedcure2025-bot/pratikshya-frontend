@@ -11,11 +11,11 @@ export const pagePadding = "px-6 md:px-12";
 /** Vertical rhythm of a section. */
 export const rhythm = {
   /** Editorial breathing room — hero-adjacent and manifesto sections. */
-  spacious: "py-32 md:py-48",
+  spacious: "py-16 md:py-24",
   /** The default section rhythm. */
-  default: "py-24 md:py-36",
+  default: "py-12 md:py-16",
   /** Tighter rhythm for paired content blocks. */
-  compact: "py-24 md:py-32",
+  compact: "py-8 md:py-12",
   /** No vertical rhythm (full-bleed hero). */
   none: "",
 };

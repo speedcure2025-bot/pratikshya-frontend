@@ -40,6 +40,7 @@ export const EMPLOYEE_ROUTE_RULES = [
   { path: "/employee/orders", permission: P.ORDERS_VIEW, prefix: true },
   { path: "/employee/offers/new", permission: P.OFFERS_CREATE, prefix: true },
   { path: "/employee/offers", permission: P.OFFERS_VIEW, prefix: true },
+  { path: "/employee/loyalty-rewards", permission: P.INSTAGRAM_REWARD_MANAGE, prefix: true },
   /* Inventory child routes are checked before the broad view rule so a
      read-only employee cannot reach an operation by typing its URL. */
   { path: "/employee/inventory/receive", permission: P.INVENTORY_RECEIVE, prefix: true },
@@ -177,6 +178,20 @@ export const EMPLOYEE_NAV_GROUPS = [
     items: [
       { id: "reports", label: "Reports", to: "/employee/reports", icon: "fileBarChart", permission: P.ANALYTICS_VIEW },
       { id: "sales", label: "Sales", to: "/employee/sales", icon: "trend", permission: P.ANALYTICS_VIEW },
+    ],
+  },
+  {
+    id: "loyalty",
+    label: "Loyalty Rewards",
+    icon: "gift",
+    items: [
+      {
+        id: "loyalty-rewards",
+        label: "Loyalty Rewards",
+        to: "/employee/loyalty-rewards",
+        icon: "gift",
+        permission: P.INSTAGRAM_REWARD_MANAGE,
+      },
     ],
   },
 ];

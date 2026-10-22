@@ -32,7 +32,9 @@ export default function EmployeeOffers() {
   const offers = useOffers({ query, status });
   const rows = useMemo(
     () =>
-      offers.map((offer) => ({
+      offers
+        .filter((offer) => !offer.code?.startsWith("INSTA-"))
+        .map((offer) => ({
         ...offer,
         applies: describeEligibility(offer),
         value: formatOfferDiscount(offer),

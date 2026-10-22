@@ -12,16 +12,15 @@ import {
   apiAdminReopenInstagramReward,
   apiAdminManualClaimInstagramReward,
 } from "../../../services/api/instagramRewardsApi";
+import { apiAdminUpdateOffer } from "../../../services/api/offersApi";
 import {
   Camera,
   CheckCircle2,
-  XCircle,
-  Clock,
-  ExternalLink,
   Copy,
   Check,
   Eye,
-  Filter,
+  ExternalLink,
+  Pencil,
   Search,
   UserPlus,
 } from "lucide-react";
@@ -82,6 +81,12 @@ export default function AdminInstagramRewards() {
   // Success state for newly generated coupon
   const [generatedCoupon, setGeneratedCoupon] = useState(null);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // Edit coupon modal state
+  const [isEditCouponOpen, setIsEditCouponOpen] = useState(false);
+  const [editCouponReward, setEditCouponReward] = useState(null);
+  const [editCouponForm, setEditCouponForm] = useState({ discountPercentage: "", usageLimit: "", expiresAt: "" });
+  const [editCouponError, setEditCouponError] = useState(null);
 
   if (!isAuthLoading && !hasPermission("instagram_reward.manage")) {
     return <AdminAccessDenied />;
@@ -249,6 +254,41 @@ export default function AdminInstagramRewards() {
     navigator.clipboard.writeText(code);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleOpenEditCoupon = (reward) => {
+    setEditCouponReward(reward);
+    setEditCouponForm({
+      discountPercentage: reward.coupon?.discountPercentage ?? "",
+      usageLimit: reward.coupon?.usageLimit ?? "",
+      expiresAt: reward.coupon?.validUntil ? reward.coupon.validUntil.slice(0, 10) : "",
+    });
+    setEditCouponError(null);
+    setIsEditCouponOpen(true);
+  };
+
+  const handleSaveEditCoupon = async () => {
+    if (!editCouponReward?.couponId || isProcessing) return;
+    const pct = parseFloat(editCouponForm.discountPercentage);
+    if (isNaN(pct) || pct <= 0 || pct > 100) {
+      setEditCouponError("Discount percentage must be between 1 and 100.");
+      return;
+    }
+    setIsProcessing(true);
+    setEditCouponError(null);
+    const form = {
+      discountValue: pct,
+      ...(editCouponForm.usageLimit !== "" && { usageLimit: parseInt(editCouponForm.usageLimit, 10) }),
+      ...(editCouponForm.expiresAt !== "" && { expiresAt: new Date(editCouponForm.expiresAt).toISOString() }),
+    };
+    const res = await apiAdminUpdateOffer(editCouponReward.couponId, form);
+    setIsProcessing(false);
+    if (res.ok) {
+      setIsEditCouponOpen(false);
+      setAttempt((a) => a + 1);
+    } else {
+      setEditCouponError(res.error ?? "Failed to update coupon.");
+    }
   };
 
   return (
@@ -430,6 +470,16 @@ export default function AdminInstagramRewards() {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
+
+                        {reward.couponId && (
+                          <button
+                            onClick={() => handleOpenEditCoupon(reward)}
+                            className="p-1.5 text-taupe hover:text-ink transition-colors"
+                            title="Edit Coupon"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
 
                         {reward.status === "PENDING" && (
                           <>
@@ -853,7 +903,82 @@ export default function AdminInstagramRewards() {
           </div>
         </div>
       )}
-      {/* 7. Manual Claim Modal */}
+      {/* 7. Edit Coupon Modal */}
+      {isEditCouponOpen && editCouponReward && (
+        <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-canvas max-w-sm w-full p-6 shadow-xl border border-mist">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-display text-lg font-light text-ink">Edit Coupon</h3>
+              <button onClick={() => setIsEditCouponOpen(false)} className="text-taupe hover:text-ink p-1">✕</button>
+            </div>
+            <p className="font-ui text-xs text-taupe mb-5">
+              Editing coupon <span className="font-mono font-bold text-ink">{editCouponReward.couponCode}</span> for <strong>{editCouponReward.customerName}</strong>.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+                  Discount Percentage <span className="text-accent">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="0.5"
+                    value={editCouponForm.discountPercentage}
+                    onChange={(e) => setEditCouponForm((f) => ({ ...f, discountPercentage: e.target.value }))}
+                    className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas focus:outline-none focus:border-accent pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-taupe text-xs">%</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+                  Usage Limit
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={editCouponForm.usageLimit}
+                  onChange={(e) => setEditCouponForm((f) => ({ ...f, usageLimit: e.target.value }))}
+                  placeholder="Leave blank to keep current"
+                  className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div>
+                <label className="block font-ui text-[10px] uppercase tracking-[.16em] text-taupe mb-1">
+                  Expiry Date
+                </label>
+                <input
+                  type="date"
+                  value={editCouponForm.expiresAt}
+                  onChange={(e) => setEditCouponForm((f) => ({ ...f, expiresAt: e.target.value }))}
+                  className="w-full border border-mist px-3 py-2 font-ui text-xs text-ink bg-canvas focus:outline-none focus:border-accent"
+                />
+              </div>
+            </div>
+
+            {editCouponError && (
+              <p className="mt-3 font-ui text-xs text-accent">{editCouponError}</p>
+            )}
+
+            <div className="flex justify-end gap-3 mt-6">
+              <AtelierButton variant="outline" onClick={() => setIsEditCouponOpen(false)} disabled={isProcessing}>
+                Cancel
+              </AtelierButton>
+              <AtelierButton variant="primary" onClick={handleSaveEditCoupon} disabled={isProcessing}>
+                {isProcessing ? "Saving…" : "Save Changes"}
+              </AtelierButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Manual Claim Modal */}
       {isManualClaimOpen && (
         <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-canvas max-w-md w-full p-6 shadow-xl border border-mist">

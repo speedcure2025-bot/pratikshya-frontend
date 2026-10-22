@@ -52,8 +52,8 @@ export default function PlacementProductRail({ placementId, count = 8 }) {
   if (!placement || rows.length === 0) return null;
 
   return (
-    <AtelierSection id={`placement-${String(placementId).toLowerCase()}`} tone="fade" rhythm="spacious">
-      <div className="mb-12 flex items-end justify-between gap-6 md:mb-16">
+    <AtelierSection id={`placement-${String(placementId).toLowerCase()}`} tone="fade" rhythm="default">
+      <div className="mb-8 flex items-end justify-between gap-6 md:mb-10">
         <EditorialHeading size="subsection" spacing={{ title: "mb-0" }}>
           The <Accent>{placement.label.replace(/ section$/i, "")}</Accent> Edit
         </EditorialHeading>

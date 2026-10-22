@@ -67,7 +67,7 @@ export default function Wishlist() {
   if (wishlist.error && wishlist.count === 0) {
     return (
       <main>
-        <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
           <Breadcrumb items={breadcrumb} className="mb-4" />
           <div role="alert" className="flex max-w-xl flex-col items-start gap-4 border border-accent/40 bg-accent/5 p-8">
             <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export default function Wishlist() {
   if (wishlist.isLoading && wishlist.count === 0) {
     return (
       <main>
-        <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
           <Breadcrumb items={breadcrumb} className="mb-4" />
           <div role="status" aria-busy="true" className="max-w-xl">
             <p className="font-display text-2xl font-light tracking-tight text-ink">
@@ -102,7 +102,7 @@ export default function Wishlist() {
   if (wishlist.count === 0) {
     return (
       <main>
-        <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+        <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
           <Breadcrumb items={breadcrumb} className="mb-4" />
           <EmptyState
             eyebrow="Saved Pieces"
@@ -129,7 +129,7 @@ export default function Wishlist() {
 
   return (
     <main>
-      <AtelierSection rhythm="none" width="wide" className="pb-24 pt-28 sm:pt-32 md:pb-32">
+      <AtelierSection rhythm="none" width="wide" className="pt-6 pb-16 md:pt-8 md:pb-20">
         <Breadcrumb items={breadcrumb} className="mb-8 md:mb-10" />
 
         <EditorialHeading

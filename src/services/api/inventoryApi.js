@@ -22,22 +22,31 @@ import { apiClient, handleError } from "./apiClient";
 // ---------------------------------------------------------------------------
 
 /**
- * GET /admin/inventory/stock
- * Filters: warehouseId, lowStock, sku, page, pageSize
+ * GET /admin/inventory/stock  (admin)
+ * GET /employee/inventory/stock  (employee, requires inventory.view)
+ * Filters: warehouseId, productId, lowStock, sku, page, pageSize
+ * Pass portal="employee" when calling from the employee portal.
  */
 export async function apiListStock({
   warehouseId,
+  productId,
   lowStock,
   sku,
   page = 1,
   pageSize = 20,
+  portal = "admin",
 } = {}) {
   try {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     if (warehouseId) params.set("warehouseId", warehouseId);
+    if (productId)   params.set("productId", productId);
     if (lowStock)    params.set("lowStock", "true");
     if (sku)         params.set("sku", sku);
-    const data = await apiClient.get(`/admin/inventory/stock?${params}`, { scope: "admin" });
+    const isEmployee = portal === "employee";
+    const path = isEmployee
+      ? `/employee/inventory/stock?${params}`
+      : `/admin/inventory/stock?${params}`;
+    const data = await apiClient.get(path, { scope: isEmployee ? "employee" : "admin" });
     return {
       ok: true,
       items: data.items ?? [],
@@ -88,15 +97,20 @@ export async function apiCreateStock({
 }
 
 /**
- * POST /admin/inventory/stock/adjust
- * Body: { stockId, delta, type, reason? }
+ * POST /admin/inventory/stock/adjust  (admin)
+ * POST /employee/inventory/stock/adjust  (employee, requires inventory.manage)
+ * Body: { stockId, delta, type, reason?, portal? }
  */
-export async function apiAdjustStock({ stockId, delta, type = "ADJUST", reason } = {}) {
+export async function apiAdjustStock({ stockId, delta, type = "ADJUST", reason, portal = "admin" } = {}) {
   try {
+    const isEmployee = portal === "employee";
+    const path = isEmployee
+      ? "/employee/inventory/stock/adjust"
+      : "/admin/inventory/stock/adjust";
     const data = await apiClient.post(
-      "/admin/inventory/stock/adjust",
+      path,
       { stockId, delta, type, reason },
-      { scope: "admin" },
+      { scope: isEmployee ? "employee" : "admin" },
     );
     return { ok: true, item: data.item ?? data };
   } catch (err) {
@@ -105,8 +119,9 @@ export async function apiAdjustStock({ stockId, delta, type = "ADJUST", reason }
 }
 
 /**
- * GET /admin/inventory/movements
- * Filters: stockId, type, dateFrom, dateTo, page, pageSize
+ * GET /admin/inventory/movements  (admin)
+ * GET /employee/inventory/movements  (employee, requires inventory.view)
+ * Filters: stockId, type, dateFrom, dateTo, page, pageSize, portal
  */
 export async function apiListMovements({
   stockId,
@@ -115,6 +130,7 @@ export async function apiListMovements({
   dateTo,
   page = 1,
   pageSize = 20,
+  portal = "admin",
 } = {}) {
   try {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
@@ -122,7 +138,11 @@ export async function apiListMovements({
     if (type)     params.set("type", type);
     if (dateFrom) params.set("dateFrom", dateFrom);
     if (dateTo)   params.set("dateTo", dateTo);
-    const data = await apiClient.get(`/admin/inventory/movements?${params}`, { scope: "admin" });
+    const isEmployee = portal === "employee";
+    const path = isEmployee
+      ? `/employee/inventory/movements?${params}`
+      : `/admin/inventory/movements?${params}`;
+    const data = await apiClient.get(path, { scope: isEmployee ? "employee" : "admin" });
     return {
       ok: true,
       movements: data.movements ?? [],
@@ -136,14 +156,19 @@ export async function apiListMovements({
 }
 
 /**
- * GET /admin/inventory/low-stock
- * Filters: warehouseId, page, pageSize
+ * GET /admin/inventory/low-stock  (admin)
+ * GET /employee/inventory/low-stock  (employee, requires inventory.view)
+ * Filters: warehouseId, page, pageSize, portal
  */
-export async function apiListLowStock({ warehouseId, page = 1, pageSize = 20 } = {}) {
+export async function apiListLowStock({ warehouseId, page = 1, pageSize = 20, portal = "admin" } = {}) {
   try {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     if (warehouseId) params.set("warehouseId", warehouseId);
-    const data = await apiClient.get(`/admin/inventory/low-stock?${params}`, { scope: "admin" });
+    const isEmployee = portal === "employee";
+    const path = isEmployee
+      ? `/employee/inventory/low-stock?${params}`
+      : `/admin/inventory/low-stock?${params}`;
+    const data = await apiClient.get(path, { scope: isEmployee ? "employee" : "admin" });
     return {
       ok: true,
       items: data.items ?? [],
@@ -176,6 +201,18 @@ export async function apiListReservations({ stockId, page = 1, pageSize = 20 } =
 // ---------------------------------------------------------------------------
 // Warehouses
 // ---------------------------------------------------------------------------
+
+/**
+ * GET /admin/warehouses/{id}
+ */
+export async function apiGetWarehouse(warehouseId) {
+  try {
+    const data = await apiClient.get(`/admin/warehouses/${warehouseId}`, { scope: "admin" });
+    return { ok: true, warehouse: data.warehouse ?? data };
+  } catch (err) {
+    return handleError(err);
+  }
+}
 
 /**
  * GET /admin/warehouses
@@ -283,6 +320,54 @@ export async function apiCreateTransfer({
     const data = await apiClient.post(
       "/admin/stock-transfers",
       { fromWarehouseId, toWarehouseId, lines, notes },
+      { scope: "admin" },
+    );
+    return { ok: true, transfer: data.transfer ?? data };
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+/**
+ * POST /admin/stock-transfers/{id}/request
+ */
+export async function apiRequestTransfer(transferId) {
+  try {
+    const data = await apiClient.post(
+      `/admin/stock-transfers/${transferId}/request`,
+      {},
+      { scope: "admin" },
+    );
+    return { ok: true, transfer: data.transfer ?? data };
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+/**
+ * POST /admin/stock-transfers/{id}/approve
+ */
+export async function apiApproveTransfer(transferId) {
+  try {
+    const data = await apiClient.post(
+      `/admin/stock-transfers/${transferId}/approve`,
+      {},
+      { scope: "admin" },
+    );
+    return { ok: true, transfer: data.transfer ?? data };
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+/**
+ * POST /admin/stock-transfers/{id}/dispatch
+ */
+export async function apiDispatchTransfer(transferId) {
+  try {
+    const data = await apiClient.post(
+      `/admin/stock-transfers/${transferId}/dispatch`,
+      {},
       { scope: "admin" },
     );
     return { ok: true, transfer: data.transfer ?? data };

@@ -61,8 +61,8 @@ export default function NewArrivals() {
   if (!rows.length) return null;
 
   return (
-    <AtelierSection id="new-arrivals" tone="fade" rhythm="spacious">
-      <div className="flex items-end justify-between gap-6 mb-12 md:mb-16">
+    <AtelierSection id="new-arrivals" tone="fade" rhythm="default">
+      <div className="flex items-end justify-between gap-6 mb-8 md:mb-10">
         <EditorialHeading size="subsection" spacing={{ title: "mb-0" }}>
           New <Accent>Arrivals</Accent>
         </EditorialHeading>

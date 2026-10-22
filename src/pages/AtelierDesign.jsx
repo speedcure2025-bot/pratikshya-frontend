@@ -67,7 +67,7 @@ export default function AtelierDesign() {
           size="manifesto"
           description="PRATIKSHYA FASHION"
           descriptionClassName={`${eyebrow.caption} text-taupe`}
-          spacing={{ title: "mb-4", description: "mb-12" }}
+          spacing={{ title: "mb-3", description: "mb-6" }}
         >
           Our <Accent>Story</Accent>
         </EditorialHeading>

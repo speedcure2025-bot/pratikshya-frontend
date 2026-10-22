@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { UserCheck, UserMinus, UsersRound } from "lucide-react";
 import AdminPage from "../../../components/admin/AdminPage";
@@ -146,6 +146,9 @@ export default function AdminEmployees({ basePath } = {}) {
     deactivateEmployee,
     suspendEmployee,
     canManageEmployees,
+    isFetching,
+    fetchError,
+    fetchEmployees,
   } = useEmployeeManagement();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("");
@@ -153,6 +156,13 @@ export default function AdminEmployees({ basePath } = {}) {
   const [status, setStatus] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [notice, setNotice] = useState(null);
+
+  // Re-fetch when the page mounts so navigating here always shows fresh data,
+  // even if the context's initial load ran before the admin session was ready.
+  useEffect(() => {
+    fetchEmployees();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const metrics = useMemo(
     () => ({
@@ -214,6 +224,22 @@ export default function AdminEmployees({ basePath } = {}) {
         </div>
       ) : null}
 
+      {fetchError ? (
+        <div
+          role="alert"
+          className="mb-6 border border-accent/40 bg-accent/5 px-4 py-3 font-ui text-sm text-accent"
+        >
+          Could not load employee list: {fetchError}
+          <button
+            type="button"
+            onClick={fetchEmployees}
+            className="ml-3 underline hover:no-underline"
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
+
       <dl className="mb-7 grid gap-3 sm:grid-cols-3">
         <Metric icon={UsersRound} label="Employees" value={metrics.total} detail="Legitimate employee identities" />
         <Metric icon={UserCheck} label="Active" value={metrics.active} detail="Can access and receive work" />
@@ -253,7 +279,7 @@ export default function AdminEmployees({ basePath } = {}) {
         <DataTable
           rows={rows}
           rowKey="employeeId"
-          empty="No employee accounts match these filters."
+          empty={isFetching ? "Loading employees…" : "No employee accounts match these filters."}
           columns={[
             {
               id: "name",
